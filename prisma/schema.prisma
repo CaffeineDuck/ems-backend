@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["interactiveTransactions"]
 }
 
 datasource db {
@@ -10,9 +11,38 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id String @id @default(cuid())
+model UserMeta {
+  id Int @id @default(autoincrement())
+
+  name     String
+  address  String
+  email    String
+  verified Boolean @default(false)
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model User {
+  id           String  @id @default(cuid())
+  phoneNumber  String  @unique
+  isVerified   Boolean @default(false)
+  role         Role    @default(USER)
+  tokenVersion Int     @default(0)
+  password     String?
+
+  userMetaId Int?      @unique
+  userMeta   UserMeta?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  WORKSHOP
+  ADMIN
 }
