@@ -28,12 +28,15 @@
     "bcrypt": "^5.0.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
+    "express": "^4.17.3",
     "helmet": "^5.0.2",
+    "nestjs-twilio": "^2.2.1",
     "prisma": "^3.12.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
     "swagger-ui-express": "^4.3.0",
+    "twilio": "^3.76.1",
     "typescript-nestjs-swagger-plugin": "^1.1.1"
   },
   "devDependencies": {

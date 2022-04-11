@@ -25,8 +25,10 @@ specifiers:
   eslint: ^8.0.1
   eslint-config-prettier: ^8.3.0
   eslint-plugin-prettier: ^4.0.0
+  express: ^4.17.3
   helmet: ^5.0.2
   jest: ^27.2.5
+  nestjs-twilio: ^2.2.1
   prettier: ^2.3.2
   prisma: ^3.12.0
   reflect-metadata: ^0.1.13
@@ -39,6 +41,7 @@ specifiers:
   ts-loader: ^9.2.3
   ts-node: ^10.0.0
   tsconfig-paths: ^3.10.1
+  twilio: ^3.76.1
   typescript: ^4.3.5
   typescript-nestjs-swagger-plugin: ^1.1.1
   webpack: ^5.72.0
@@ -55,12 +58,15 @@ dependencies:
   bcrypt: 5.0.1
   class-transformer: 0.5.1
   class-validator: 0.13.2
+  express: 4.17.3
   helmet: 5.0.2
+  nestjs-twilio: 2.2.1_9207e435cae4f0d69f99619062b70d9b
   prisma: 3.12.0
   reflect-metadata: 0.1.13
   rimraf: 3.0.2
   rxjs: 7.5.5
-  swagger-ui-express: 4.3.0
+  swagger-ui-express: 4.3.0_express@4.17.3
+  twilio: 3.76.1
   typescript-nestjs-swagger-plugin: 1.1.1_924b3ea6435e5d32253496e57594a4a1
 
 devDependencies:
@@ -979,7 +985,7 @@ packages:
       lodash: 4.17.21
       path-to-regexp: 3.2.0
       reflect-metadata: 0.1.13
-      swagger-ui-express: 4.3.0
+      swagger-ui-express: 4.3.0_express@4.17.3
     transitivePeerDependencies:
       - class-transformer
       - class-validator
@@ -1712,7 +1718,6 @@ packages:
 
   /asap/2.0.6:
     resolution: {integrity: sha1-5QNHYR1+aQlDIIu9r+vLwvuGbUY=}
-    dev: true
 
   /asynckit/0.4.0:
     resolution: {integrity: sha1-x57Zf380y48robyXkLzDZkdLS3k=}
@@ -2246,6 +2251,10 @@ packages:
       whatwg-mimetype: 2.3.0
       whatwg-url: 8.7.0
     dev: true
+
+  /dayjs/1.11.0:
+    resolution: {integrity: sha512-JLC809s6Y948/FuCZPm5IX8rRhQwOiyMb2TfVVQEixG7P8Lm/gt5S7yoQZmC8x1UehI9Pb7sksEt4xx14m+7Ug==}
+    dev: false
 
   /debug/2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
@@ -4227,6 +4236,18 @@ packages:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
     dev: true
 
+  /nestjs-twilio/2.2.1_9207e435cae4f0d69f99619062b70d9b:
+    resolution: {integrity: sha512-Om7Wz1IY81sVwqhfkBwD/L+B37QyteI3PP4RmY6fK7EopQEfsKHzVvLpavItybNs5qshMfVkJlRAbKL5hBDwgw==}
+    peerDependencies:
+      '@nestjs/common': ^8.0.0
+      '@nestjs/core': ^8.0.0
+      twilio: ^3.63.1
+    dependencies:
+      '@nestjs/common': 8.4.4_5199533202e21c7185c9d97f881e2827
+      '@nestjs/core': 8.4.4_b63c269346792a9d57cfab86d23050d2
+      twilio: 3.76.1
+    dev: false
+
   /node-addon-api/3.2.1:
     resolution: {integrity: sha512-mmcei9JghVNDYydghQmeDX8KoAm0FAiYyIcUt/N4nhyAipB17pllZQDOJD2fotxABnt4Mdz+dKTO7eftLg4d0A==}
     dev: false
@@ -4487,6 +4508,10 @@ packages:
     engines: {node: '>=4'}
     dev: true
 
+  /pop-iterate/1.0.1:
+    resolution: {integrity: sha1-zqz9q0q/NT16DyqqLB/Hs/lBO6M=}
+    dev: false
+
   /prelude-ls/1.1.2:
     resolution: {integrity: sha1-IZMqVJ9eUv/ZqCf1cOBL5iqX2lQ=}
     engines: {node: '>= 0.8.0'}
@@ -4564,6 +4589,14 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
+  /q/2.0.3:
+    resolution: {integrity: sha1-dbjbAlWhpa+C9Yw/Oqoe/sfQ0TQ=}
+    dependencies:
+      asap: 2.0.6
+      pop-iterate: 1.0.1
+      weak-map: 1.0.8
+    dev: false
+
   /qs/6.10.3:
     resolution: {integrity: sha512-wr7M2E0OFRfIfJZjKGieI8lBKb7fRCH4Fv5KNPEs7gJ8jadvotdsS08PzOKR7opXhZ/Xkjtt3WF9g38drmyRqQ==}
     engines: {node: '>=0.6'}
@@ -4578,6 +4611,10 @@ packages:
   /qs/6.9.7:
     resolution: {integrity: sha512-IhMFgUmuNpyRfxA90umL7ByLlgRXu6tIfKPpF5TmcfRLlLCckfP/g3IQmju6jjpu+Hh8rA+2p6A27ZSPOOHdKw==}
     engines: {node: '>=0.6'}
+    dev: false
+
+  /querystringify/2.2.0:
+    resolution: {integrity: sha512-FIqgj2EUvTa7R50u0rGsyTftzjYmv/a3hO345bZNrqabNqjtgiDMgmo4mkUjd+nzU5oF3dClKqFIPUKybUyqoQ==}
     dev: false
 
   /queue-microtask/1.2.3:
@@ -4681,6 +4718,10 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
+  /requires-port/1.0.0:
+    resolution: {integrity: sha1-kl0mAdOaxIXgkc8NpcbmlNw9yv8=}
+    dev: false
+
   /resolve-cwd/3.0.0:
     resolution: {integrity: sha512-OrZaX2Mb+rJCpH/6CpSqt9xFVpN++x01XnN2ie9g6P5/3xelLAkXWVADpdz1IHD/KFfEXyE6V0U01OQ3UO2rEg==}
     engines: {node: '>=8'}
@@ -4731,6 +4772,10 @@ packages:
     dependencies:
       glob: 7.2.0
 
+  /rootpath/0.1.2:
+    resolution: {integrity: sha1-Wzeah9ypBum5HWkKWZQ5vvJn6ms=}
+    dev: false
+
   /run-async/2.4.1:
     resolution: {integrity: sha512-tvVnVv01b8c1RrA6Ep7JkStj85Guv/YrMcwqYQnwjsAS2cTmmPGBBjAjpCW7RrSodNSoE2/qg9O4bceNvUuDgQ==}
     engines: {node: '>=0.12.0'}
@@ -4778,6 +4823,10 @@ packages:
       ajv: 6.12.6
       ajv-keywords: 3.5.2_ajv@6.12.6
     dev: true
+
+  /scmp/2.1.0:
+    resolution: {integrity: sha512-o/mRQGk9Rcer/jEEw/yw4mwo3EU/NvYvp577/Btqrym9Qy5/MdWGBqipbALgd2lrdWTJ5/gqDusxfnQBxOxT2Q==}
+    dev: false
 
   /semver/5.7.1:
     resolution: {integrity: sha512-sauaDf/PZdVgrLTNYHRtpXa1iRiKcaebiKQ1BJdpQlWH2lCvexQdX55snPFyK7QzpudqbCI0qXFfOasHdyNDGQ==}
@@ -5055,12 +5104,13 @@ packages:
     resolution: {integrity: sha512-eR4vsd7sYo0Sx7ZKRP5Z04yij7JkNmIlUQfrDQgC+xO5ABYx+waabzN+nDsQTLAJ4Z04bjkRd8xqkJtbxr3G7w==}
     dev: false
 
-  /swagger-ui-express/4.3.0:
+  /swagger-ui-express/4.3.0_express@4.17.3:
     resolution: {integrity: sha512-jN46SEEe9EoXa3ZgZoKgnSF6z0w3tnM1yqhO4Y+Q4iZVc8JOQB960EZpIAz6rNROrDApVDwcMHR0mhlnc/5Omw==}
     engines: {node: '>= v0.10.32'}
     peerDependencies:
       express: '>=4.0.0'
     dependencies:
+      express: 4.17.3
       swagger-ui-dist: 4.10.3
     dev: false
 
@@ -5345,6 +5395,26 @@ packages:
       typescript: 4.6.3
     dev: true
 
+  /twilio/3.76.1:
+    resolution: {integrity: sha512-/hHTn+XfjG6FEDXeOpOGJO9XzyP5zpDBalZ4g75stAsP0T/yHlGPokfrhKZjQoOZNzeE9UiQfDq2yvcQHXjDfQ==}
+    engines: {node: '>=6.0'}
+    dependencies:
+      axios: 0.26.1
+      dayjs: 1.11.0
+      https-proxy-agent: 5.0.0
+      jsonwebtoken: 8.5.1
+      lodash: 4.17.21
+      q: 2.0.3
+      qs: 6.10.3
+      rootpath: 0.1.2
+      scmp: 2.1.0
+      url-parse: 1.5.10
+      xmlbuilder: 13.0.2
+    transitivePeerDependencies:
+      - debug
+      - supports-color
+    dev: false
+
   /type-check/0.3.2:
     resolution: {integrity: sha1-WITKtRLPHTVeP7eE8wgEsrUg23I=}
     engines: {node: '>= 0.8.0'}
@@ -5436,6 +5506,13 @@ packages:
       punycode: 2.1.1
     dev: true
 
+  /url-parse/1.5.10:
+    resolution: {integrity: sha512-WypcfiRhfeUP9vvF0j6rw0J3hrWrw6iZv3+22h6iRMJ/8z1Tj6XfLP4DsUix5MhMPnXpiHDoKyoZ/bdCkwBCiQ==}
+    dependencies:
+      querystringify: 2.2.0
+      requires-port: 1.0.0
+    dev: false
+
   /util-deprecate/1.0.2:
     resolution: {integrity: sha1-RQ1Nyfpw3nMnYvvS1KKJgUGaDM8=}
 
@@ -5508,6 +5585,10 @@ packages:
     dependencies:
       defaults: 1.0.3
     dev: true
+
+  /weak-map/1.0.8:
+    resolution: {integrity: sha512-lNR9aAefbGPpHO7AEnY0hCFjz1eTkWCXYvkTRrTHs9qv8zJp+SkVYpzfLIFXQQiG3tVvbNFQgVg2bQS8YGgxyw==}
+    dev: false
 
   /webidl-conversions/3.0.1:
     resolution: {integrity: sha1-JFNCdeKnvGvnvIZhHMFq4KVlSHE=}
@@ -5702,6 +5783,11 @@ packages:
   /xml-name-validator/3.0.0:
     resolution: {integrity: sha512-A5CUptxDsvxKJEU3yO6DuWBSJz/qizqzJKOMIfUJHETbBw/sFaDxgd6fxm1ewUaM0jZ444Fc5vC5ROYurg/4Pw==}
     dev: true
+
+  /xmlbuilder/13.0.2:
+    resolution: {integrity: sha512-Eux0i2QdDYKbdbA6AM6xE4m6ZTZr4G4xF9kahI2ukSEMCzwce2eX9WlTI5J3s+NU7hpasFsr8hWIONae7LluAQ==}
+    engines: {node: '>=6.0'}
+    dev: false
 
   /xmlchars/2.2.0:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
