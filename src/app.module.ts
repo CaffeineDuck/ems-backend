@@ -4,6 +4,7 @@ import { CommonsModule } from './modules/commons/commons.module';
 import { ConfigModule } from '@nestjs/config';
 import { RouterModule } from '@nestjs/core';
 import { AuthModule } from './modules/auth/auth.module';
+import config from './config';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { AuthModule } from './modules/auth/auth.module';
     CommonsModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env'],
+      load: [config],
     }),
     RouterModule.register([{ path: 'admin', module: AdminModule }]),
   ],

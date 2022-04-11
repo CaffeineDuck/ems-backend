@@ -3,7 +3,14 @@ import { AuthService } from './services/auth.service';
 import { OtpFlowDto } from './dto/otp/flow.dto';
 import { VerifyOtpDto } from './dto/otp/verify.dto';
 import { TokensDto } from './dto/tokens.dto';
-import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { UserIdDto } from './dto/userId.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -14,7 +21,8 @@ export class AuthController {
    * Start the authentication flow for both login and register.
    */
   @Post('flow')
-  async otpFlow(@Body() otpFlowDto: OtpFlowDto): Promise<{ userId: string }> {
+  @ApiCreatedResponse({ type: UserIdDto })
+  async otpFlow(@Body() otpFlowDto: OtpFlowDto): Promise<UserIdDto> {
     const userId = await this.authService.authFlow(otpFlowDto);
     return { userId };
   }
@@ -24,6 +32,13 @@ export class AuthController {
    */
   @Post('verify')
   @ApiCreatedResponse({ type: TokensDto })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiBadRequestResponse({
+    description: 'OTP has not been requested for the number',
+  })
+  @ApiForbiddenResponse({
+    description: 'Wrong OTP',
+  })
   async verify(@Body() verifyOtpDto: VerifyOtpDto): Promise<TokensDto> {
     return this.authService.verifyOtp(verifyOtpDto);
   }

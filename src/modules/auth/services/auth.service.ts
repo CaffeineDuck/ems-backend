@@ -1,7 +1,8 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
-  UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { PrismaClient, User } from '@prisma/client';
 import { PrismaService } from '../../commons/prisma/prisma.service';
@@ -57,11 +58,11 @@ export class AuthService {
       where: { id: userId },
     });
 
-    if (!user) throw new BadRequestException('User not found');
+    if (!user) throw new NotFoundException('User not found');
     if (!user.password) throw new BadRequestException('OTP not requested');
 
     const isValid = await this.otpService.compareOtp(otp, user.password);
-    if (!isValid) throw new UnauthorizedException('OTP not valid');
+    if (!isValid) throw new ForbiddenException('OTP not valid');
 
     const newUser = await this.prismaService.user.update({
       where: { id: userId },
@@ -80,9 +81,9 @@ export class AuthService {
       where: { id: refreshTokenPayload.userId },
     });
 
-    if (!user) throw new BadRequestException('User not found');
+    if (!user) throw new NotFoundException('User not found');
     if (user.tokenVersion != refreshTokenPayload.version)
-      throw new UnauthorizedException('Token version mismatch');
+      throw new ForbiddenException('Token version mismatch');
 
     const tokens = await this.genTokens(user);
     return tokens;

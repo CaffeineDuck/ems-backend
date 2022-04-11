@@ -5,16 +5,25 @@ import { OtpService } from './services/otp.service';
 import { JwtModule } from '@nestjs/jwt';
 import { TokenService } from './services/token.service';
 import { TwilioModule } from 'nestjs-twilio';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    JwtModule.register({
-      secret: 'secret',
-      signOptions: { expiresIn: '1h' },
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService<IConfig>) => ({
+        secret: configService.get('jwt.secret', { infer: true }),
+        signOptions: {
+          expiresIn: configService.get('jwt.expiresIn', { infer: true }),
+        },
+      }),
     }),
-    TwilioModule.forRoot({
-      accountSid: '',
-      authToken: '',
+    TwilioModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService<IConfig>) => ({
+        accountSid: configService.get('twilio.accountSid', { infer: true }),
+        authToken: configService.get('twilio.authToken', { infer: true }),
+      }),
     }),
   ],
   controllers: [AuthController],
