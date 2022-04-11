@@ -36,8 +36,7 @@
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
     "swagger-ui-express": "^4.3.0",
-    "twilio": "^3.76.1",
-    "typescript-nestjs-swagger-plugin": "^1.1.1"
+    "twilio": "^3.76.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",

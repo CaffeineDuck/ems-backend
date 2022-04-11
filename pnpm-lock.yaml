@@ -43,7 +43,6 @@ specifiers:
   tsconfig-paths: ^3.10.1
   twilio: ^3.76.1
   typescript: ^4.3.5
-  typescript-nestjs-swagger-plugin: ^1.1.1
   webpack: ^5.72.0
 
 dependencies:
@@ -67,7 +66,6 @@ dependencies:
   rxjs: 7.5.5
   swagger-ui-express: 4.3.0_express@4.17.3
   twilio: 3.76.1
-  typescript-nestjs-swagger-plugin: 1.1.1_924b3ea6435e5d32253496e57594a4a1
 
 devDependencies:
   '@nestjs/cli': 8.2.5
@@ -1233,10 +1231,6 @@ packages:
   /@types/mime/1.3.2:
     resolution: {integrity: sha512-YATxVxgRqNH6nHEIsvg6k2Boc1JHI9ZbH5iWFFv/MTkchz3b1ieGDa5T0a9RznNdI0KhVbdbWSN+KWWrQZRxTw==}
     dev: true
-
-  /@types/node/14.18.12:
-    resolution: {integrity: sha512-q4jlIR71hUpWTnGhXWcakgkZeHa3CCjcQcnuzU8M891BAWA2jHiziiWEPEkdS5pFsz7H9HJiy8BrK7tBRNrY7A==}
-    dev: false
 
   /@types/node/16.11.26:
     resolution: {integrity: sha512-GZ7bu5A6+4DtG7q9GsoHXy3ALcgeIHP4NnL0Vv2wu0uUB/yQex26v0tf6/na1mm0+bS9Uw+0DFex7aaKr2qawQ==}
@@ -5460,17 +5454,6 @@ packages:
 
   /typedarray/0.0.6:
     resolution: {integrity: sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=}
-    dev: false
-
-  /typescript-nestjs-swagger-plugin/1.1.1_924b3ea6435e5d32253496e57594a4a1:
-    resolution: {integrity: sha512-4wK6FAIvkEh8x/Ul031CtFMNSsq0cQlj9DPfDSchz+QU8xJeqDjBtlTOILbEgMKh+KipY5XdfKYN5nDmtf2QGQ==}
-    peerDependencies:
-      '@nestjs/swagger': '*'
-      typescript: '*'
-    dependencies:
-      '@nestjs/swagger': 5.2.1_0d02518704b9480274bb3a5bf7280c33
-      '@types/node': 14.18.12
-      typescript: 4.6.3
     dev: false
 
   /typescript/4.6.2:
