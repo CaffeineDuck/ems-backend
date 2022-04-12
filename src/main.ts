@@ -29,6 +29,7 @@ async function bootstrap() {
     .setDescription('Emistri API')
     .setVersion('1.0')
     .addTag('emistri')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

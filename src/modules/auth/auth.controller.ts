@@ -42,4 +42,20 @@ export class AuthController {
   async verify(@Body() verifyOtpDto: VerifyOtpDto): Promise<TokensDto> {
     return this.authService.verifyOtp(verifyOtpDto);
   }
+
+  /**
+   * Get the access token from the refreshToken
+   */
+  @Post('refresh')
+  @ApiCreatedResponse({ type: TokensDto })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiBadRequestResponse({
+    description: 'Refresh token has expired',
+  })
+  @ApiForbiddenResponse({
+    description: 'Token version changed (Password recovery flow)',
+  })
+  async refresh(@Body() tokensDto: TokensDto): Promise<TokensDto> {
+    return this.authService.refreshToken(tokensDto.refreshToken);
+  }
 }

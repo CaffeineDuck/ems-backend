@@ -10,9 +10,9 @@ export default () =>
     },
     twilio: {
       accountSid:
-        process.env.TWILIO_ACCOUNT_SID || 'AC307783230d8fff454f2e44a12c0beac7',
+        process.env.TWILIO_ACCOUNT_SID || 'ACc176128903e7465d7bc748907065fcde',
       authToken:
-        process.env.TWILIO_AUTH_TOKEN || '289671ef73794f829024fa596eaeee26',
-      fromNumber: process.env.TWILIO_PHONE_NUMBER || '+17076827899',
+        process.env.TWILIO_AUTH_TOKEN || 'edcbd71c2e1d15dc5b218ee16bb322af',
+      fromNumber: process.env.TWILIO_PHONE_NUMBER || '+15005550006',
     },
   } as IConfig);

@@ -23,6 +23,8 @@ export class OtpService {
   }
 
   async sendOtp(otp: number, phone: string): Promise<boolean> {
+    console.log(`OTP FOR ${phone}: ${otp}`);
+
     // TODO: Check for API response from twilio.
     await this.twilioClient.messages.create({
       body: `Your OTP for E-Mistri is ${otp}`,

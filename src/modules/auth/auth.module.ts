@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { TokenService } from './services/token.service';
 import { TwilioModule } from 'nestjs-twilio';
 import { ConfigService } from '@nestjs/config';
+import { JwtStrategy } from './stratigies/jwt.strategy';
 
 @Module({
   imports: [
@@ -27,6 +28,6 @@ import { ConfigService } from '@nestjs/config';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, OtpService, TokenService],
+  providers: [AuthService, OtpService, TokenService, JwtStrategy],
 })
 export class AuthModule {}

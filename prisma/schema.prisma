@@ -11,12 +11,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model UserMeta {
+model UserProfile {
   id Int @id @default(autoincrement())
 
   name     String
   address  String
-  email    String
   verified Boolean @default(false)
 
   userId String @unique
@@ -27,15 +26,19 @@ model UserMeta {
 }
 
 model User {
-  id           String  @id @default(cuid())
-  phoneNumber  String  @unique
-  isVerified   Boolean @default(false)
-  role         Role    @default(USER)
-  tokenVersion Int     @default(0)
-  password     String?
+  id              String    @id @default(cuid())
+  onBoarded       Boolean   @default(false)
+  phoneNumber     String    @unique
+  phoneVerified   Boolean   @default(false)
+  email           String?   @unique
+  emailVerified   Boolean   @default(false)
+  role            Role      @default(USER)
+  tokenVersion    Int       @default(0)
+  password        String?
+  passwordUpdated DateTime?
 
-  userMetaId Int?      @unique
-  userMeta   UserMeta?
+  userProfileId Int?         @unique
+  userProfile   UserProfile?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

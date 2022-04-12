@@ -5,11 +5,13 @@ import { ConfigModule } from '@nestjs/config';
 import { RouterModule } from '@nestjs/core';
 import { AuthModule } from './modules/auth/auth.module';
 import config from './config';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
     AdminModule,
     AuthModule,
+    UsersModule,
     CommonsModule,
     ConfigModule.forRoot({
       isGlobal: true,
