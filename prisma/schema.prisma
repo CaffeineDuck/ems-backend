@@ -25,6 +25,31 @@ model UserProfile {
   updatedAt DateTime @updatedAt
 }
 
+model Workshop {
+  id       Int     @id @default(autoincrement())
+  name     String
+  location String
+  service  Service
+
+  ownerId String   @unique
+  owner   User     @relation(fields: [ownerId], references: [id])
+  ratings Rating[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Rating {
+  id      Int     @id @default(autoincrement())
+  score   Int
+  comment String?
+
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  workShopId Int
+  workshop   Workshop @relation(fields: [workShopId], references: [id])
+}
+
 model User {
   id              String    @id @default(cuid())
   onBoarded       Boolean   @default(false)
@@ -37,8 +62,11 @@ model User {
   password        String?
   passwordUpdated DateTime?
 
-  userProfileId Int?         @unique
-  userProfile   UserProfile?
+  userProfileId   Int?         @unique
+  userProfile     UserProfile?
+  workshopId      Int?         @unique
+  workshop        Workshop?
+  created_ratings Rating[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -48,4 +76,12 @@ enum Role {
   USER
   WORKSHOP
   ADMIN
+}
+
+enum Service {
+  B
+  S
+  C
+  BS
+  BSC
 }
