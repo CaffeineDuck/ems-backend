@@ -1,15 +1,18 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './services/auth.service';
 import { AuthController } from './auth.controller';
-import { OtpService } from './services/otp.service';
 import { JwtModule } from '@nestjs/jwt';
 import { TokenService } from './services/token.service';
 import { TwilioModule } from 'nestjs-twilio';
 import { ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './stratigies/jwt.strategy';
+import { UsersModule } from '../users/users.module';
+import { VerificationModule } from '../users/verification/verification.module';
 
 @Module({
   imports: [
+    UsersModule,
+    VerificationModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService<IConfig>) => ({
@@ -28,6 +31,6 @@ import { JwtStrategy } from './stratigies/jwt.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, OtpService, TokenService, JwtStrategy],
+  providers: [AuthService, TokenService, JwtStrategy],
 })
 export class AuthModule {}

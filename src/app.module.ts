@@ -6,6 +6,7 @@ import { RouterModule } from '@nestjs/core';
 import { AuthModule } from './modules/auth/auth.module';
 import config from './config';
 import { UsersModule } from './modules/users/users.module';
+import { VerificationModule } from './modules/users/verification/verification.module';
 
 @Module({
   imports: [
@@ -17,7 +18,19 @@ import { UsersModule } from './modules/users/users.module';
       isGlobal: true,
       load: [config],
     }),
-    RouterModule.register([{ path: 'admin', module: AdminModule }]),
+    RouterModule.register([
+      { path: 'admin', module: AdminModule },
+      {
+        path: 'users',
+        module: UsersModule,
+        children: [
+          {
+            path: 'verification',
+            module: VerificationModule,
+          },
+        ],
+      },
+    ]),
   ],
 })
 export class AppModule {}

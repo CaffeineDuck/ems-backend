@@ -1,49 +1,31 @@
 import {
-  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaClient, User } from '@prisma/client';
-import { PrismaService } from '../../commons/prisma/prisma.service';
+import { User } from '@prisma/client';
+import { UsersService } from 'src/modules/users/users.service';
+import { VerifyService } from 'src/modules/users/verification/services/verify.service';
 import { OtpFlowDto } from '../dto/otp/flow.dto';
 import { VerifyOtpDto } from '../dto/otp/verify.dto';
 import { TokensDto } from '../dto/tokens.dto';
-import { OtpService } from './otp.service';
 import { TokenService } from './token.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly prismaService: PrismaService,
-    private readonly otpService: OtpService,
     private readonly tokenService: TokenService,
+    private readonly usersService: UsersService,
+    private readonly verifyService: VerifyService,
   ) {}
 
   async authFlow({ phoneNumber }: OtpFlowDto): Promise<string> {
-    const otp = await this.otpService.generateOtp();
-    const hashedOtp = await this.otpService.hashOtp(otp);
+    let user = await this.usersService.getByPhone(phoneNumber);
+    if (!user) {
+      user = await this.usersService.createByPhone(phoneNumber);
+    }
 
-    const user = await this.prismaService.$transaction(
-      async (prisma: PrismaClient) => {
-        let user = await prisma.user.findUnique({ where: { phoneNumber } });
-
-        if (!user) {
-          await prisma.user.create({
-            data: { phoneNumber },
-          });
-        }
-
-        const updatedUser = prisma.user.update({
-          where: { phoneNumber },
-          data: { password: hashedOtp },
-        });
-
-        return updatedUser;
-      },
-    );
-
-    await this.otpService.sendOtp(otp, user.phoneNumber);
+    await this.usersService.updatePhone(user.id, phoneNumber);
     return user.id;
   }
 
@@ -54,22 +36,10 @@ export class AuthService {
   }
 
   async verifyOtp({ otp, userId }: VerifyOtpDto): Promise<TokensDto> {
-    const user = await this.prismaService.user.findUnique({
-      where: { id: userId },
-    });
+    await this.verifyService.verifyPhone(userId, otp);
 
-    if (!user) throw new NotFoundException('User not found');
-    if (!user.password) throw new BadRequestException('OTP not requested');
-
-    const isValid = await this.otpService.compareOtp(otp, user.password);
-    if (!isValid) throw new ForbiddenException('OTP not valid');
-
-    const newUser = await this.prismaService.user.update({
-      where: { id: userId },
-      data: { password: null },
-    });
-
-    const tokens = await this.genTokens(newUser);
+    const user = await this.usersService.getById(userId);
+    const tokens = await this.genTokens(user!);
     return tokens;
   }
 
@@ -77,10 +47,8 @@ export class AuthService {
     const refreshTokenPayload = await this.tokenService.decodeRefreshToken(
       refreshToken,
     );
-    const user = await this.prismaService.user.findUnique({
-      where: { id: refreshTokenPayload.userId },
-    });
 
+    const user = await this.usersService.getById(refreshTokenPayload.userId);
     if (!user) throw new NotFoundException('User not found');
     if (user.tokenVersion != refreshTokenPayload.version)
       throw new ForbiddenException('Token version mismatch');
