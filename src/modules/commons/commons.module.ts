@@ -5,5 +5,6 @@ import { PrismaService } from './prisma/prisma.service';
 @Global()
 @Module({
   providers: [EmistriLogger, PrismaService],
+  exports: [EmistriLogger, PrismaService],
 })
 export class CommonsModule {}
