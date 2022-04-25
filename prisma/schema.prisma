@@ -11,6 +11,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model UrgentService {
+  id Int @id @default(autoincrement())
+
+  distance    Float
+  vechileType VechileType
+  description String?
+  price       Int?
+  endTime     DateTime?
+
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id])
+  workShopId Int      @unique
+  workShop   Workshop @relation(fields: [workShopId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model UserProfile {
   id Int @id @default(autoincrement())
 
@@ -26,14 +44,16 @@ model UserProfile {
 }
 
 model Workshop {
-  id       Int     @id @default(autoincrement())
-  name     String
-  location String
-  service  Service
+  id          Int                              @id @default(autoincrement())
+  name        String
+  location    String
+  vechileType VechileType
+  geolocation Unsupported("GEOGRAPHY(POINT)")?
 
-  ownerId String   @unique
-  owner   User     @relation(fields: [ownerId], references: [id])
-  ratings Rating[]
+  ownerId        String          @unique
+  owner          User            @relation(fields: [ownerId], references: [id])
+  ratings        Rating[]
+  urgentServices UrgentService[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -62,14 +82,23 @@ model User {
   password        String?
   passwordUpdated DateTime?
 
-  userProfileId   Int?         @unique
+  userProfileId   Int?            @unique
   userProfile     UserProfile?
-  workshopId      Int?         @unique
+  workshopId      Int?            @unique
   workshop        Workshop?
   created_ratings Rating[]
+  urgentServices  UrgentService[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
 }
 
 enum Role {
@@ -78,7 +107,7 @@ enum Role {
   ADMIN
 }
 
-enum Service {
+enum VechileType {
   B
   S
   C

@@ -15,4 +15,7 @@ export default () =>
         process.env.TWILIO_AUTH_TOKEN || 'edcbd71c2e1d15dc5b218ee16bb322af',
       fromNumber: process.env.TWILIO_PHONE_NUMBER || '+15005550006',
     },
+    geolocation: {
+      radius: +(process.env.GEOLOCATION_RADIUS || '5'),
+    },
   } as IConfig);

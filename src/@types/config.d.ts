@@ -14,8 +14,13 @@ interface ITwilioConfig {
   fromNumber: string;
 }
 
+interface IGeolocationConfig {
+  radius: number;
+}
+
 interface IConfig {
   jwt: IJwtConfig;
   server: IServerConfig;
   twilio: ITwilioConfig;
+  geolocation: IGeolocationConfig;
 }

@@ -7,6 +7,9 @@ import { AuthModule } from './modules/auth/auth.module';
 import config from './config';
 import { UsersModule } from './modules/users/users.module';
 import { VerificationModule } from './modules/users/verification/verification.module';
+import { EmServicesModule } from './modules/em-services/em-services.module';
+import { UrgentModule } from './modules/em-services/urgent/urgent.module';
+import { WorkshopModule } from './modules/workshop/workshop.module';
 
 @Module({
   imports: [
@@ -14,6 +17,8 @@ import { VerificationModule } from './modules/users/verification/verification.mo
     AuthModule,
     UsersModule,
     CommonsModule,
+    EmServicesModule,
+    WorkshopModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [config],
@@ -27,6 +32,16 @@ import { VerificationModule } from './modules/users/verification/verification.mo
           {
             path: 'verification',
             module: VerificationModule,
+          },
+        ],
+      },
+      {
+        path: 'services',
+        module: EmServicesModule,
+        children: [
+          {
+            path: 'urgent',
+            module: UrgentModule,
           },
         ],
       },
