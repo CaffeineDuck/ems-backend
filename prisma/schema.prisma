@@ -19,6 +19,7 @@ model UrgentService {
   description String?
   price       Int?
   endTime     DateTime?
+  geolocation Unsupported("GEOGRAPHY(POINT)")?
 
   userId     String   @unique
   user       User     @relation(fields: [userId], references: [id])
@@ -44,11 +45,11 @@ model UserProfile {
 }
 
 model Workshop {
-  id          Int                              @id @default(autoincrement())
-  name        String
-  location    String
-  vechileType VechileType
-  geolocation Unsupported("GEOGRAPHY(POINT)")?
+  id           Int                              @id @default(autoincrement())
+  name         String
+  location     String
+  vechileTypes VechileType[]
+  geolocation  Unsupported("GEOGRAPHY(POINT)")?
 
   ownerId        String          @unique
   owner          User            @relation(fields: [ownerId], references: [id])
@@ -82,12 +83,12 @@ model User {
   password        String?
   passwordUpdated DateTime?
 
-  userProfileId   Int?            @unique
-  userProfile     UserProfile?
-  workshopId      Int?            @unique
-  workshop        Workshop?
-  created_ratings Rating[]
-  urgentServices  UrgentService[]
+  userProfileId  Int?            @unique
+  userProfile    UserProfile?
+  workshopId     Int?            @unique
+  workshop       Workshop?
+  createdRatings Rating[]
+  urgentServices UrgentService[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -111,6 +112,4 @@ enum VechileType {
   B
   S
   C
-  BS
-  BSC
 }
