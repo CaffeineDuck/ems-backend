@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Role, VechileType } from '@prisma/client';
 import { PrismaService } from '../commons/prisma/prisma.service';
+import { WorkshopQueryService } from '../raw-query/services/workshop-query.service';
 import { CreateWorkshopDto } from './dto/create-workshop.dto';
 import { UpdateWorkshopDto } from './dto/update-workshop.dto';
 
@@ -9,11 +9,18 @@ import { UpdateWorkshopDto } from './dto/update-workshop.dto';
 export class WorkshopService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly configService: ConfigService<IConfig>,
+    private readonly workshopQueryService: WorkshopQueryService,
   ) {}
 
   async create(createWorkshopDto: CreateWorkshopDto, userId: string) {
     const { lat, lng, ...workshop } = createWorkshopDto;
+    const user = await this.prismaService.user.findUnique({
+      where: { id: userId },
+      select: { onBoarded: true, workshopId: true, userProfileId: true },
+    });
+
+    if (user?.onBoarded || user?.workshopId || user?.userProfileId)
+      throw new ForbiddenException('User has already onboarded');
 
     const workshopCreated = await this.prismaService.$transaction(
       async (prisma) => {
@@ -21,20 +28,25 @@ export class WorkshopService {
           where: { id: userId },
           data: {
             role: Role.WORKSHOP,
+            onBoarded: true,
           },
         });
 
-        const create_workshop = await prisma.workshop.create({
+        const createWorkshop = await prisma.workshop.create({
           data: {
             ...workshop,
             owner: { connect: { id: userId } },
           },
         });
 
-        return prisma.$queryRaw`
-            UPDATE "Workshop" SET "geolocation" = 'POINT(${lng} ${lat})' 
-            WHERE "id" = ${create_workshop.id}
-          `;
+        await this.workshopQueryService.addGeolocation(
+          prisma,
+          createWorkshop.id,
+          lat,
+          lng,
+        );
+
+        return createWorkshop;
       },
     );
 
@@ -42,27 +54,12 @@ export class WorkshopService {
   }
 
   async findAll(lat: number, lng: number, vechile: VechileType) {
-    const radius = this.configService.get('geolocation.radius', {
-      infer: true,
-    });
-
-    return this.prismaService.$queryRaw`
-      SELECT name, id, location, geolocation, 
-        ST_Distance_Sphere(geolocation, 
-                           'ST_SetSRID(ST_MakePoint(${lng} ${lat}), 4326)'
-                          ) AS distance
-      FROM "Workshop"
-
-      WHERE 
-          "Workshop"."vechileType" = ${vechile} 
-        AND
-          ST_DWithin("Workshop"."geolocation", 
-                    'ST_SetSRID(ST_MakePoint(${lng} ${lat}), 4326)', 
-                    ${radius}
-                    )
-      ORDER BY 
-        distance;
-    `;
+    return this.workshopQueryService.findAll(
+      this.prismaService,
+      lat,
+      lng,
+      vechile,
+    );
   }
 
   async findOne(id: number) {
@@ -71,9 +68,9 @@ export class WorkshopService {
     });
   }
 
-  async update(id: number, updateWorkshopDto: UpdateWorkshopDto) {
+  async update(userId: string, updateWorkshopDto: UpdateWorkshopDto) {
     return this.prismaService.workshop.update({
-      where: { id },
+      where: { ownerId: userId },
       data: updateWorkshopDto,
     });
   }

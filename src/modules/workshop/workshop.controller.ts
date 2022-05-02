@@ -63,9 +63,9 @@ export class WorkshopController {
   @Patch(':id')
   @HasRoles(Role.WORKSHOP)
   update(
-    @Param('id') id: string,
+    @UserId() userId: string,
     @Body() updateWorkshopDto: UpdateWorkshopDto,
   ) {
-    return this.workshopService.update(+id, updateWorkshopDto);
+    return this.workshopService.update(userId, updateWorkshopDto);
   }
 }

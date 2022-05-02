@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { VechileType } from '@prisma/client';
 import { IsEnum, IsLatitude, IsLongitude, IsString } from 'class-validator';
 
@@ -8,8 +9,9 @@ export class CreateWorkshopDto {
   @IsString()
   location: string;
 
-  @IsEnum(VechileType)
-  vechileType: VechileType;
+  @IsEnum(VechileType, { each: true })
+  @ApiProperty({ enum: VechileType, isArray: true })
+  vechileTypes: VechileType[];
 
   @IsLatitude()
   lat: number;
