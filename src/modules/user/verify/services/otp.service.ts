@@ -16,7 +16,10 @@ export class OtpService {
   ) {}
 
   async generateOtp(length: number = 6): Promise<number> {
-    return Math.floor(Math.random() * Math.pow(10, length));
+    if (process.env?.NODE_ENV != 'developement')
+      return Math.floor(Math.random() * Math.pow(10, length));
+
+    return 123456;
   }
 
   async hashOtp(otp: number): Promise<string> {
@@ -28,7 +31,6 @@ export class OtpService {
   }
 
   async sendOtp(otp: number, otpType: OtpType, to: string): Promise<boolean> {
-    console.log(`OTP for ${to} is ${otp}`);
     switch (otpType) {
       case OtpType.SMS:
         return this.smsOtpService.sendOtp(to, otp.toString());

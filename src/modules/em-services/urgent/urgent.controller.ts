@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { HasRoles } from 'src/modules/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
-import { UserId } from 'src/modules/users/decorators/user-id.decorator';
+import { UserId } from 'src/modules/user/decorators/user-id.decorator';
 import { StartServiceDto } from './dto/start-service.dto';
 import { StopServiceDto } from './dto/stop-service.dto';
 import { UrgentService } from './urgent.service';

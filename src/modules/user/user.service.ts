@@ -1,11 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { OtpService, OtpType } from './verification/services/otp.service';
+import { OtpService, OtpType } from './verify/services/otp.service';
 import { PrismaService } from '../commons/prisma/prisma.service';
-import { UserOnboardDto } from './dto/user-onboard.dto';
-import { UserProfile } from './entity/user-profile.entity';
+import { UserVerificationStatus } from './entity/user-verification.entity';
 
 @Injectable()
-export class UsersService {
+export class UserService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly otpService: OtpService,
@@ -20,29 +19,6 @@ export class UsersService {
     });
 
     if (!existingUser) throw new BadRequestException('User has not onboarded');
-  }
-
-  async isVerified(userId: string) {
-    const user = await this.prismaService.user.findUnique({
-      where: {
-        id: userId,
-      },
-      select: {
-        id: true,
-        onBoarded: true,
-        phoneVerified: true,
-        emailVerified: true,
-        userProfile: {
-          select: {
-            verified: true,
-          },
-        },
-      },
-    });
-
-    if (!user) throw new BadRequestException('User not found');
-
-    return user;
   }
 
   async getById(userId: string) {
@@ -60,42 +36,6 @@ export class UsersService {
   async createByPhone(phoneNumber: string) {
     return this.prismaService.user.create({
       data: { phoneNumber: phoneNumber },
-    });
-  }
-
-  async getProfile(userId: string): Promise<UserProfile | null> {
-    return this.prismaService.user.findUnique({
-      where: {
-        id: userId,
-      },
-      select: {
-        id: true,
-        phoneNumber: true,
-        userProfile: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-  }
-
-  async onBoard(userId: string, onBoardDto: UserOnboardDto): Promise<void> {
-    const { email, ...userMeta } = onBoardDto;
-    const user = await this.getById(userId);
-
-    if (user?.onBoarded)
-      throw new BadRequestException('User has already onBoarded');
-
-    await this.prismaService.user.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        email: email,
-        onBoarded: true,
-        userProfile: {
-          create: userMeta,
-        },
-      },
     });
   }
 
@@ -166,6 +106,22 @@ export class UsersService {
       },
       data: {
         verified: true,
+      },
+    });
+  }
+
+  async getVerificationStatus(
+    userId: string,
+  ): Promise<UserVerificationStatus | null> {
+    return this.prismaService.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        id: true,
+        onBoarded: true,
+        emailVerified: true,
+        phoneVerified: true,
       },
     });
   }

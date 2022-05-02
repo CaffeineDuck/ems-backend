@@ -11,7 +11,7 @@ import {
 import { WorkshopService } from './workshop.service';
 import { CreateWorkshopDto } from './dto/create-workshop.dto';
 import { UpdateWorkshopDto } from './dto/update-workshop.dto';
-import { UserId } from '../users/decorators/user-id.decorator';
+import { UserId } from '../user/decorators/user-id.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { HasRoles } from '../auth/decorators/roles.decorator';

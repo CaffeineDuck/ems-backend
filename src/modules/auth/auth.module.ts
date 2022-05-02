@@ -3,16 +3,15 @@ import { AuthService } from './services/auth.service';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { TokenService } from './services/token.service';
-import { TwilioModule } from 'nestjs-twilio';
 import { ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './stratigies/jwt.strategy';
-import { UsersModule } from '../users/users.module';
-import { VerificationModule } from '../users/verification/verification.module';
+import { UserModule } from '../user/user.module';
+import { VerifyModule } from '../user/verify/verify.module';
 
 @Module({
   imports: [
-    UsersModule,
-    VerificationModule,
+    UserModule,
+    VerifyModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService<IConfig>) => ({
@@ -20,13 +19,6 @@ import { VerificationModule } from '../users/verification/verification.module';
         signOptions: {
           expiresIn: configService.get('jwt.expiresIn', { infer: true }),
         },
-      }),
-    }),
-    TwilioModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService<IConfig>) => ({
-        accountSid: configService.get('twilio.accountSid', { infer: true }),
-        authToken: configService.get('twilio.authToken', { infer: true }),
       }),
     }),
   ],

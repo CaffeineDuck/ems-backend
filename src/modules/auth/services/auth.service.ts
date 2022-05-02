@@ -4,8 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { UsersService } from 'src/modules/users/users.service';
-import { VerifyService } from 'src/modules/users/verification/services/verify.service';
+import { UserService } from 'src/modules/user/user.service';
+import { VerifyService } from 'src/modules/user/verify/services/verify.service';
 import { OtpFlowDto } from '../dto/otp/flow.dto';
 import { VerifyOtpDto } from '../dto/otp/verify.dto';
 import { TokensDto } from '../dto/tokens.dto';
@@ -15,7 +15,7 @@ import { TokenService } from './token.service';
 export class AuthService {
   constructor(
     private readonly tokenService: TokenService,
-    private readonly usersService: UsersService,
+    private readonly usersService: UserService,
     private readonly verifyService: VerifyService,
   ) {}
 

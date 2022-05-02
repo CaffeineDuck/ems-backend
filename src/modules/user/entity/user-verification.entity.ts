@@ -3,7 +3,4 @@ export class UserVerificationStatus {
   onBoarded: boolean;
   phoneVerified: boolean;
   emailVerified: boolean;
-  userProfile: {
-    verified: boolean;
-  } | null;
 }

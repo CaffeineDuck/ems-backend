@@ -1,24 +1,30 @@
-import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiTags,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { HasRoles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { UserId } from '../users/decorators/user-id.decorator';
-import { UserProfile } from '../users/entity/user-profile.entity';
+import { UserId } from '../user/decorators/user-id.decorator';
 import { ClientService } from './client.service';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ClientProfile } from './entity/profile.entity';
 
 @Controller('client')
 @ApiTags('client')
 @ApiBearerAuth()
-@ApiUnauthorizedResponse()
 @UseGuards(JwtAuthGuard)
 @HasRoles(Role.USER)
 export class ClientController {
@@ -28,16 +34,27 @@ export class ClientController {
    * Get the profile of the currently logged in user
    */
   @Get('profile')
-  @ApiCreatedResponse({ type: UserProfile, description: 'Get user profile' })
+  @ApiOkResponse({
+    description: 'Get user profile',
+    type: ClientProfile,
+  })
   async getProfile(@UserId() userId: string) {
-    return this.clientService.getProfile(userId);
+    const profile = await this.clientService.getProfile(userId);
+    if (!profile)
+      throw new NotFoundException(
+        'There is no profile linked with current user',
+      );
+    return profile;
   }
 
   /*
-   * Get the profile of the currently logged in user
+   * Create the profile of the currently logged in user
    */
   @Post('profile')
-  @ApiOkResponse({ type: UserProfile, description: 'Create user profile' })
+  @ApiCreatedResponse({
+    description: 'Create user profile',
+    type: ClientProfile,
+  })
   async createProfile(
     @UserId() userId: string,
     @Body() createProfileDto: CreateProfileDto,
@@ -46,10 +63,10 @@ export class ClientController {
   }
 
   /*
-   * Get the profile of the currently logged in user
+   * Update the profile of the currently logged in user
    */
   @Patch('profile')
-  @ApiOkResponse({ type: UserProfile, description: 'Update user profile' })
+  @ApiOkResponse({ description: 'Update profile', type: ClientProfile })
   async updateProfile(
     @UserId() userId: string,
     @Body() updateProfileDto: UpdateProfileDto,

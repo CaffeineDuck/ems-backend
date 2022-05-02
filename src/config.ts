@@ -16,6 +16,6 @@ export default () =>
       fromNumber: process.env.TWILIO_PHONE_NUMBER || '+15005550006',
     },
     geolocation: {
-      radius: +(process.env.GEOLOCATION_RADIUS || '5'),
+      radius: +(process.env.GEOLOCATION_RADIUS || '15000'),
     },
   } as IConfig);
