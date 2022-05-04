@@ -58,9 +58,9 @@ export class WorkshopController {
   }
 
   /**
-   * Update a workshop
+   * Update a workshop linked with the user
    */
-  @Patch(':id')
+  @Patch()
   @HasRoles(Role.WORKSHOP)
   update(
     @UserId() userId: string,
