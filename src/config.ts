@@ -18,4 +18,11 @@ export default () =>
     geolocation: {
       radius: +(process.env.GEOLOCATION_RADIUS || '15000'),
     },
+    aws: {
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+      s3: {
+        bucket: process.env.AWS_S3_BUCKET || 'emistiri-dev',
+      },
+    },
   } as IConfig);

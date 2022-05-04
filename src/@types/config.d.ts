@@ -18,9 +18,18 @@ interface IGeolocationConfig {
   radius: number;
 }
 
+interface IAwsConfig {
+  accessKeyId: string;
+  secretAccessKey: string;
+  s3: {
+    bucket: string;
+  };
+}
+
 interface IConfig {
   jwt: IJwtConfig;
   server: IServerConfig;
   twilio: ITwilioConfig;
   geolocation: IGeolocationConfig;
+  aws: IAwsConfig;
 }

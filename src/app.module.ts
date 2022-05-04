@@ -10,6 +10,7 @@ import { UrgentModule } from './modules/em-services/urgent/urgent.module';
 import { WorkshopModule } from './modules/workshop/workshop.module';
 import { UserModule } from './modules/user/user.module';
 import { ClientModule } from './modules/client/client.module';
+import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ClientModule } from './modules/client/client.module';
     CommonsModule,
     EmServicesModule,
     WorkshopModule,
+    UploadModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [config],
