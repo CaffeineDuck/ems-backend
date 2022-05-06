@@ -4,13 +4,9 @@ import { ConfigService } from '@nestjs/config';
 import { v4 as uuid } from 'uuid';
 const sharp = require('sharp');
 
-export enum FileType {
-  IMAGE = 'image',
-  OTHER = 'other',
-}
-
 @Injectable()
 export class UploadService {
+  image_mimetypes = ['image/jpeg', 'image/png', 'image/webp'];
   constructor(private readonly configService: ConfigService<IConfig>) {}
 
   private generateFileName(ext: string): string {
@@ -31,12 +27,11 @@ export class UploadService {
     return [fileName, file.buffer];
   }
 
-  async upload(file: Express.Multer.File, fileType: FileType) {
+  async upload(file: Express.Multer.File) {
     // Get the extension of the provided file
-    const [fileName, buffer] =
-      fileType === FileType.IMAGE
-        ? await this.processImage(file)
-        : await this.processOther(file);
+    const [fileName, buffer] = this.image_mimetypes.includes(file.mimetype)
+      ? await this.processImage(file)
+      : await this.processOther(file);
     const bucketS3 = this.configService.get('aws.s3.bucket', { infer: true })!;
     return this.uploadS3(buffer, bucketS3, fileName, file.mimetype);
   }
@@ -44,19 +39,35 @@ export class UploadService {
   async uploadS3(
     file: Buffer,
     bucket: string,
-    name: string,
+    filename: string,
     mimeType?: string,
   ) {
     const s3 = await this.getS3();
     const params: S3.Types.PutObjectRequest = {
       Bucket: bucket,
-      Key: name,
+      Key: filename,
       Body: file,
-      ACL: 'public-read',
       ContentType: mimeType,
     };
 
-    return s3.upload(params).promise();
+    try {
+      await s3.upload(params).promise();
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+    return { filename: filename };
+  }
+
+  async getSignedUrl(key: string) {
+    const bucketS3 = this.configService.get('aws.s3.bucket', { infer: true })!;
+    const s3 = await this.getS3();
+    const params = {
+      Bucket: bucketS3,
+      Key: key,
+      Expires: 60,
+    };
+    const url = s3.getSignedUrl('getObject', params);
+    return { url };
   }
 
   async getS3() {
@@ -67,6 +78,7 @@ export class UploadService {
       secretAccessKey: await this.configService.get('aws.secretAccessKey', {
         infer: true,
       }),
+      region: await this.configService.get('aws.s3.region', { infer: true }),
     });
   }
 }

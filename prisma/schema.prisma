@@ -49,12 +49,32 @@ model Workshop {
   name         String
   location     String
   vechileTypes VechileType[]
+  verified     Boolean                          @default(false)
   geolocation  Unsupported("GEOGRAPHY(POINT)")?
 
-  ownerId        String          @unique
-  owner          User            @relation(fields: [ownerId], references: [id])
+  ownerId        String             @unique
+  owner          User               @relation(fields: [ownerId], references: [id])
   ratings        Rating[]
   urgentServices UrgentService[]
+  documents      WorkshopDocuments?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WorkshopDocuments {
+  id Int @id @default(autoincrement())
+
+  citizenShipId    String @unique
+  citizenshipImage String
+  panNumber        String @unique
+  panImage         String
+  vatNumber        String @unique
+  vatImage         String
+  shopImage        String
+
+  workshopId Int      @unique
+  workshop   Workshop @relation(fields: [workshopId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -6,19 +6,26 @@ import {
   UploadedFile,
   UseGuards,
   Query,
+  Get,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { FileType, UploadService } from './upload.service';
+import { UploadService } from './upload.service';
 
 @ApiTags('Uploads')
 @Controller('uploads')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 export class UploadsController {
   constructor(private uploadService: UploadService) {}
 
+  @Get(':key')
+  async getFile(@Query('key') key: string) {
+    return this.uploadService.getSignedUrl(key);
+  }
+
   @ApiConsumes('multipart/form-data')
-  @ApiBearerAuth()
   @ApiBody({
     schema: {
       type: 'object',
@@ -30,13 +37,9 @@ export class UploadsController {
       },
     },
   })
-  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   @Post()
-  async uploadFile(
-    @UploadedFile() file: Express.Multer.File,
-    @Query() fileType: FileType,
-  ) {
-    return this.uploadService.upload(file, fileType);
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    return this.uploadService.upload(file);
   }
 }

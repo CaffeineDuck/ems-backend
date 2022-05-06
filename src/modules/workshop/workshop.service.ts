@@ -2,7 +2,9 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Role, VechileType } from '@prisma/client';
 import { PrismaService } from '../commons/prisma/prisma.service';
 import { WorkshopQueryService } from '../raw-query/services/workshop-query.service';
+import { AddDocumentsDto } from './dto/add-documents.dto';
 import { CreateWorkshopDto } from './dto/create-workshop.dto';
+import { UpdateDocumentsDto } from './dto/update-documents.dto';
 import { UpdateWorkshopDto } from './dto/update-workshop.dto';
 
 @Injectable()
@@ -72,6 +74,27 @@ export class WorkshopService {
     return this.prismaService.workshop.update({
       where: { ownerId: userId },
       data: updateWorkshopDto,
+    });
+  }
+
+  async addDocuments(userId: string, documents: AddDocumentsDto) {
+    await this.prismaService.workshop.update({
+      where: { ownerId: userId },
+      data: { documents: { create: documents } },
+    });
+  }
+
+  async updateDocuments(userId: string, documents: UpdateDocumentsDto) {
+    const workshopId = await this.prismaService.workshop.findUnique({
+      where: { ownerId: userId },
+      select: { id: true },
+    });
+
+    if (!workshopId) throw new ForbiddenException('User is not a workshop');
+
+    return this.prismaService.workshop.update({
+      where: { id: workshopId.id },
+      data: { documents: { update: documents }, verified: false },
     });
   }
 }

@@ -27,7 +27,6 @@ import { UploadModule } from './modules/upload/upload.module';
       load: [config],
     }),
     RouterModule.register([
-      { path: 'admin', module: AdminModule },
       {
         path: 'service',
         module: EmServicesModule,

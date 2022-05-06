@@ -23,6 +23,7 @@ interface IAwsConfig {
   secretAccessKey: string;
   s3: {
     bucket: string;
+    region: string;
   };
 }
 

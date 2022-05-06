@@ -23,6 +23,7 @@ export default () =>
       accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
       s3: {
         bucket: process.env.AWS_S3_BUCKET || 'emistiri-dev',
+        region: process.env.AWS_S3_REGION || 'ap-south-1',
       },
     },
   } as IConfig);

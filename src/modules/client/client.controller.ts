@@ -16,6 +16,7 @@ import {
 import { Role } from '@prisma/client';
 import { HasRoles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserId } from '../user/decorators/user-id.decorator';
 import { ClientService } from './client.service';
 import { CreateProfileDto } from './dto/create-profile.dto';
@@ -25,7 +26,7 @@ import { ClientProfile } from './entity/profile.entity';
 @Controller('client')
 @ApiTags('client')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @HasRoles(Role.USER)
 export class ClientController {
   constructor(private readonly clientService: ClientService) {}

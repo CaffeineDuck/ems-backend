@@ -16,11 +16,14 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { HasRoles } from '../auth/decorators/roles.decorator';
 import { Role, VechileType } from '@prisma/client';
+import { AddDocumentsDto } from './dto/add-documents.dto';
+import { UpdateDocumentsDto } from './dto/update-documents.dto';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('workshop')
 @ApiTags('workshop')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class WorkshopController {
   constructor(private readonly workshopService: WorkshopService) {}
 
@@ -67,5 +70,23 @@ export class WorkshopController {
     @Body() updateWorkshopDto: UpdateWorkshopDto,
   ) {
     return this.workshopService.update(userId, updateWorkshopDto);
+  }
+
+  @Post('documents')
+  @HasRoles(Role.WORKSHOP)
+  addDocuments(
+    @UserId() userId: string,
+    @Body() addDocumentsDto: AddDocumentsDto,
+  ) {
+    return this.workshopService.addDocuments(userId, addDocumentsDto);
+  }
+
+  @Patch('documents')
+  @HasRoles(Role.WORKSHOP)
+  updateDocuments(
+    @UserId() userId: string,
+    @Body() updateDocumentsDto: UpdateDocumentsDto,
+  ) {
+    return this.workshopService.updateDocuments(userId, updateDocumentsDto);
   }
 }
