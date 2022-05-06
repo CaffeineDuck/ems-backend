@@ -7,6 +7,7 @@ import {
   UseGuards,
   Query,
   Get,
+  Param,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -21,8 +22,8 @@ export class UploadsController {
   constructor(private uploadService: UploadService) {}
 
   @Get(':key')
-  async getFile(@Query('key') key: string) {
-    return this.uploadService.getSignedUrl(key);
+  async getFile(@Param('key') key: string, @Query('time') time: string) {
+    return this.uploadService.getSignedUrl(key, +time);
   }
 
   @ApiConsumes('multipart/form-data')

@@ -58,13 +58,16 @@ export class UploadService {
     return { filename: filename };
   }
 
-  async getSignedUrl(key: string) {
+  async getSignedUrl(key: string, time: number) {
+    if (time > 86400)
+      throw new BadRequestException('Time must be less than 24 hours');
+
     const bucketS3 = this.configService.get('aws.s3.bucket', { infer: true })!;
     const s3 = await this.getS3();
     const params = {
       Bucket: bucketS3,
       Key: key,
-      Expires: 60,
+      Expires: time,
     };
     const url = s3.getSignedUrl('getObject', params);
     return { url };
