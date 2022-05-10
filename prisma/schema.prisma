@@ -16,15 +16,19 @@ model UrgentService {
 
   distance    Float
   vechileType VechileType
+  started     Boolean                          @default(false)
+  completed   Boolean                          @default(false)
+  cancelled   Boolean                          @default(false)
   description String?
   price       Int?
   endTime     DateTime?
+  startTime   DateTime?
   geolocation Unsupported("GEOGRAPHY(POINT)")?
 
-  userId     String   @unique
-  user       User     @relation(fields: [userId], references: [id])
-  workShopId Int      @unique
-  workShop   Workshop @relation(fields: [workShopId], references: [id])
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  workShopId Int?
+  workShop   Workshop? @relation(fields: [workShopId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -102,6 +106,7 @@ model User {
   tokenVersion    Int       @default(0)
   password        String?
   passwordUpdated DateTime?
+  deviceToken     String?
 
   userProfileId  Int?            @unique
   userProfile    UserProfile?
