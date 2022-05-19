@@ -15,4 +15,19 @@ export default () =>
         process.env.TWILIO_AUTH_TOKEN || 'edcbd71c2e1d15dc5b218ee16bb322af',
       fromNumber: process.env.TWILIO_PHONE_NUMBER || '+15005550006',
     },
+    geolocation: {
+      radius: +(process.env.GEOLOCATION_RADIUS || '15000'),
+    },
+    aws: {
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+      s3: {
+        bucket: process.env.AWS_S3_BUCKET || 'emistiri-dev',
+        region: process.env.AWS_S3_REGION || 'ap-south-1',
+      },
+    },
+    pusher: {
+      instanceId: process.env.PUSHER_INSTANCE_ID,
+      secretKey: process.env.PUSHER_KEY,
+    },
   } as IConfig);

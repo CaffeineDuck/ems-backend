@@ -11,6 +11,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model UrgentService {
+  id String @id @default(cuid())
+
+  vechileType      VechileType
+  started          Boolean                          @default(false)
+  completed        Boolean                          @default(false)
+  cancelled        Boolean                          @default(false)
+  description      String?
+  price            Int?
+  endTime          DateTime?
+  startTime        DateTime?
+  geolocation      Unsupported("GEOGRAPHY(POINT)")?
+  finalGeolocation Unsupported("GEOGRAPHY(POINT)")?
+
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  workshopId Int?
+  workshop   Workshop? @relation(fields: [workshopId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model UserProfile {
   id Int @id @default(autoincrement())
 
@@ -25,6 +48,53 @@ model UserProfile {
   updatedAt DateTime @updatedAt
 }
 
+model Workshop {
+  id           Int                              @id @default(autoincrement())
+  name         String
+  location     String
+  vechileTypes VechileType[]
+  verified     Boolean                          @default(false)
+  geolocation  Unsupported("GEOGRAPHY(POINT)")?
+
+  ownerId        String             @unique
+  owner          User               @relation(fields: [ownerId], references: [id])
+  ratings        Rating[]
+  urgentServices UrgentService[]
+  documents      WorkshopDocuments?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WorkshopDocuments {
+  id Int @id @default(autoincrement())
+
+  citizenShipId    String @unique
+  citizenshipImage String
+  panNumber        String @unique
+  panImage         String
+  vatNumber        String @unique
+  vatImage         String
+  shopImage        String
+
+  workshopId Int      @unique
+  workshop   Workshop @relation(fields: [workshopId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Rating {
+  id      Int     @id @default(autoincrement())
+  score   Int
+  comment String?
+
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  workshopId Int
+  workshop   Workshop @relation(fields: [workshopId], references: [id])
+}
+
 model User {
   id              String    @id @default(cuid())
   onBoarded       Boolean   @default(false)
@@ -36,16 +106,35 @@ model User {
   tokenVersion    Int       @default(0)
   password        String?
   passwordUpdated DateTime?
+  deviceToken     String?
 
-  userProfileId Int?         @unique
-  userProfile   UserProfile?
+  userProfileId  Int?            @unique
+  userProfile    UserProfile?
+  workshopId     Int?            @unique
+  workshop       Workshop?
+  createdRatings Rating[]
+  urgentServices UrgentService[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
 }
 
 enum Role {
   USER
   WORKSHOP
   ADMIN
+}
+
+enum VechileType {
+  B
+  S
+  C
 }
