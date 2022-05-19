@@ -13,7 +13,6 @@ export class UrgentConsumer {
 
   @Process('cancelRequest')
   async handle(job: Job<RequestUrgentJob>) {
-    console.log(job.data);
     const { userId, workshopId, lat, lng, ...rest } = job.data;
     await this.prismaService.$transaction(async (prisma) => {
       const urgentService = await this.prismaService.urgentService.create({
