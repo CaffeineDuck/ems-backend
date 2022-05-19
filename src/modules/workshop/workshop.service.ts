@@ -18,37 +18,34 @@ export class WorkshopService {
     const { lat, lng, ...workshop } = createWorkshopDto;
     const user = await this.prismaService.user.findUnique({
       where: { id: userId },
-      select: { onBoarded: true, workshopId: true, userProfileId: true },
+      select: { onBoarded: true },
     });
 
-    if (user?.onBoarded || user?.workshopId || user?.userProfileId)
+    if (user?.onBoarded)
       throw new ForbiddenException('User has already onboarded');
 
     const workshopCreated = await this.prismaService.$transaction(
       async (prisma) => {
-        await prisma.user.update({
+        const createdWorkshop = await prisma.user.update({
           where: { id: userId },
           data: {
-            role: Role.WORKSHOP,
+            workshop: { create: workshop },
             onBoarded: true,
+            role: Role.WORKSHOP,
           },
+          select: { workshop: true },
         });
-
-        const createWorkshop = await prisma.workshop.create({
-          data: {
-            ...workshop,
-            owner: { connect: { id: userId } },
-          },
-        });
+        if (!createdWorkshop || !createdWorkshop.workshop)
+          throw new ForbiddenException('User is not a workshop');
 
         await this.workshopQueryService.addGeolocation(
           prisma,
-          createWorkshop.id,
+          createdWorkshop.workshop.id,
           lat,
           lng,
         );
 
-        return createWorkshop;
+        return createdWorkshop;
       },
     );
 

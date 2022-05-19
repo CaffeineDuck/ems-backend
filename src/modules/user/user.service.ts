@@ -39,6 +39,23 @@ export class UserService {
     });
   }
 
+  async updatePassword(userId: string, phoneNumber: string): Promise<void> {
+    const otp = await this.otpService.generateOtp();
+    const hashedOtp = await this.otpService.hashOtp(otp);
+
+    await this.prismaService.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        password: hashedOtp,
+        phoneVerified: false,
+      },
+    });
+
+    await this.otpService.sendOtp(otp, OtpType.SMS, phoneNumber);
+  }
+
   async updatePhone(userId: string, phoneNumber: string): Promise<void> {
     const otp = await this.otpService.generateOtp();
     const hashedOtp = await this.otpService.hashOtp(otp);

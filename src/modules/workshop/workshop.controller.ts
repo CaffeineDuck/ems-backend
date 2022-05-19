@@ -42,7 +42,6 @@ export class WorkshopController {
    * Find all workshops near you
    */
   @Get()
-  @HasRoles(Role.WORKSHOP)
   findAll(
     @Query('lat') lat: string,
     @Query('lng') lng: string,
@@ -55,7 +54,6 @@ export class WorkshopController {
    * Find an workshop by id
    */
   @Get(':id')
-  @HasRoles(Role.WORKSHOP)
   findOne(@Param('id') id: string) {
     return this.workshopService.findOne(+id);
   }

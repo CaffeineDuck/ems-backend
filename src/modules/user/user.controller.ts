@@ -66,8 +66,10 @@ export class UsersController {
    */
   @Put('phone')
   async verifyPhone(@UserId() userId: string, @Body() { otp }: VerifyOtpDto) {
-    const verified = await this.verifyService.verifyPhone(userId, otp);
+    const user = await this.userService.getById(userId);
+    const verified = await this.verifyService.verifyOtp(user!.password!, otp);
     if (!verified) throw new BadRequestException('Invalid OTP');
+    await this.userService.verifyPhone(userId);
   }
 
   /**
@@ -75,7 +77,9 @@ export class UsersController {
    */
   @Put('email')
   async verifyEmail(@UserId() userId: string, @Body() { otp }: VerifyOtpDto) {
-    const verified = await this.verifyService.verifyEmail(userId, otp);
+    const user = await this.userService.getById(userId);
+    const verified = await this.verifyService.verifyOtp(user!.password!, otp);
     if (!verified) throw new BadRequestException('Invalid OTP');
+    await this.userService.verifyEmail(userId);
   }
 }

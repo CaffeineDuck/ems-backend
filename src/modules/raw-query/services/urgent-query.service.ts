@@ -35,7 +35,7 @@ export class UrgentQueryService {
   ): Promise<void> {
     await prisma.$queryRaw`
       UPDATE "UrgentService"
-      SET finalGeolocation = ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)
+      SET "finalGeolocation" = ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)
       WHERE id = ${id};
       `;
   }

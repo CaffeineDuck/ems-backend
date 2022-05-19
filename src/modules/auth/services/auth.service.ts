@@ -2,6 +2,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { UserService } from 'src/modules/user/user.service';
@@ -24,6 +25,7 @@ export class AuthService {
     if (!user) {
       user = await this.usersService.createByPhone(phoneNumber);
     }
+    await this.usersService.updatePassword(user.id, phoneNumber);
     return user.id;
   }
 
@@ -34,9 +36,19 @@ export class AuthService {
   }
 
   async verifyOtp({ otp, userId }: VerifyOtpDto): Promise<Tokens> {
-    await this.verifyService.verifyPhone(userId, otp);
     const user = await this.usersService.getById(userId);
-    const tokens = await this.genTokens(user!);
+    // Check for user existance and otp request
+    if (!user) throw new NotFoundException('User not found');
+    if (!user.password)
+      throw new ForbiddenException('User not hasnot requested otp');
+
+    // OTP verification
+    const verified = await this.verifyService.verifyOtp(user.password, otp);
+    if (!verified) throw new UnauthorizedException('Invalid OTP');
+    await this.usersService.verifyPhone(userId);
+
+    // Return the tokens
+    const tokens = await this.genTokens(user);
     return tokens;
   }
 

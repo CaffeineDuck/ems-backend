@@ -96,21 +96,17 @@ model Rating {
 }
 
 model User {
-  id              String    @id @default(cuid())
-  onBoarded       Boolean   @default(false)
-  phoneNumber     String    @unique
-  phoneVerified   Boolean   @default(false)
-  email           String?   @unique
-  emailVerified   Boolean   @default(false)
-  role            Role      @default(USER)
-  tokenVersion    Int       @default(0)
-  password        String?
-  passwordUpdated DateTime?
-  deviceToken     String?
+  id            String  @id @default(cuid())
+  onBoarded     Boolean @default(false)
+  phoneNumber   String  @unique
+  phoneVerified Boolean @default(false)
+  email         String? @unique
+  emailVerified Boolean @default(false)
+  role          Role    @default(USER)
+  tokenVersion  Int     @default(0)
+  password      String?
 
-  userProfileId  Int?            @unique
   userProfile    UserProfile?
-  workshopId     Int?            @unique
   workshop       Workshop?
   createdRatings Rating[]
   urgentServices UrgentService[]

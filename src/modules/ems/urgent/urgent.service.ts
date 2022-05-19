@@ -23,16 +23,20 @@ export class UrgentService {
   ) {}
 
   async requestService(userId: string, requestUrgentDto: RequestUrgentDto) {
-    const workshopUser = await this.prismaService.user.findUnique({
-      where: { workshopId: requestUrgentDto.workshopId },
+    const workshop = await this.prismaService.workshop.findUnique({
+      where: { id: requestUrgentDto.workshopId },
+      select: { ownerId: true },
     });
-    if (!workshopUser || workshopUser.id)
-      throw new ForbiddenException('Workshop not found');
+    if (!workshop) throw new BadRequestException('Workshop not found');
 
     const existingService = await this.prismaService.urgentService.findFirst({
-      where: { OR: [{ userId }, { workshopId: requestUrgentDto.workshopId }] },
+      where: {
+        OR: [{ userId }, { workshop: { id: requestUrgentDto.workshopId } }],
+        completed: false,
+      },
       select: { id: true },
     });
+
     if (existingService)
       throw new ForbiddenException(
         'User or workshop has a open urgent service',
@@ -41,18 +45,20 @@ export class UrgentService {
     const job = await this.urgentQueue.add(
       `cancelRequest`,
       { userId, ...requestUrgentDto } as RequestUrgentJob,
-      { delay: 1000 * 60, jobId: randomUUID() },
+      { delay: 60 * 1000, jobId: randomUUID() },
     );
 
-    await this.notificationService.sendNotifToUser(workshopUser.id, {
+    await this.notificationService.sendNotifToUser(workshop.ownerId, {
       apns: { aps: {}, data: { requestId: job.id } },
     });
+
+    return job.id;
   }
 
   async acceptRequest(workshopUserId: string, requestId: string) {
     // Getting the job data
     const job = await this.urgentQueue.getJob(requestId);
-    if (!job || (await job?.finished()))
+    if (!job || !(await job?.isDelayed()))
       throw new BadRequestException('Request ID does not exist or has expired');
     const { lat, lng, workshopId, userId, ...service }: RequestUrgentJob =
       job.data;
@@ -72,6 +78,8 @@ export class UrgentService {
           data: {
             workshop: { connect: { id: workshopId } },
             ...service,
+            started: true,
+            startTime: new Date(),
             user: { connect: { id: userId } },
           },
         });

@@ -4,6 +4,7 @@ import { UrgentGateway } from './urgent.gateway';
 import { RawQueryModule } from 'src/modules/raw-query/raw-query.module';
 import { BullModule } from '@nestjs/bull';
 import { UrgentController } from './urgent.controller';
+import { UrgentConsumer } from './urgent.processor';
 
 @Module({
   imports: [
@@ -12,6 +13,6 @@ import { UrgentController } from './urgent.controller';
     BullModule.registerQueue({ name: 'urgentService' }),
   ],
   controllers: [UrgentController],
-  providers: [UrgentService, UrgentGateway],
+  providers: [UrgentService, UrgentGateway, UrgentConsumer],
 })
 export class UrgentModule {}

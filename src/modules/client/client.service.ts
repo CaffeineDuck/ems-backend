@@ -16,24 +16,12 @@ export class ClientService {
     userId: string,
     createProfileDto: CreateProfileDto,
   ): Promise<UserProfile | null> {
-    const updateUser = this.prismaService.user.update({
+    const profile = await this.prismaService.user.update({
       where: { id: userId },
-      data: { onBoarded: true },
+      data: { userProfile: { create: createProfileDto }, onBoarded: true },
+      select: { userProfile: true },
     });
-
-    const createProfile = this.prismaService.userProfile.create({
-      data: {
-        ...createProfileDto,
-        user: { connect: { id: userId } },
-      },
-    });
-
-    const [_, profile] = await this.prismaService.$transaction([
-      updateUser,
-      createProfile,
-    ]);
-
-    return profile;
+    return profile.userProfile;
   }
 
   async updateProfile(

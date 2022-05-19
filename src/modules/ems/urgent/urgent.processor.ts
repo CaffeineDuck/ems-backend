@@ -4,15 +4,16 @@ import { PrismaService } from 'src/modules/commons/prisma/prisma.service';
 import { UrgentQueryService } from 'src/modules/raw-query/services/urgent-query.service';
 import { RequestUrgentJob } from './entities/urgent.entity';
 
-@Processor('urgent')
+@Processor('urgentService')
 export class UrgentConsumer {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly urgentQueryService: UrgentQueryService,
   ) {}
 
-  @Process()
+  @Process('cancelRequest')
   async handle(job: Job<RequestUrgentJob>) {
+    console.log(job.data);
     const { userId, workshopId, lat, lng, ...rest } = job.data;
     await this.prismaService.$transaction(async (prisma) => {
       const urgentService = await this.prismaService.urgentService.create({
@@ -20,6 +21,7 @@ export class UrgentConsumer {
           user: { connect: { id: userId } },
           workshop: { connect: { id: workshopId } },
           cancelled: true,
+          completed: true,
           ...rest,
         },
       });

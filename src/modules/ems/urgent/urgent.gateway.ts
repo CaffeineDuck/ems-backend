@@ -18,7 +18,8 @@ export class UrgentGateway implements OnGatewayConnection {
   constructor(private readonly urgentService: UrgentService) {}
 
   handleConnection(client: Socket) {
-    const { urgentId } = client.handshake.query;
+    const { urgentid: urgentId } = client.handshake.headers;
+    if (!urgentId) client.disconnect();
     client.join(`urgent-${urgentId}`);
   }
 
@@ -26,6 +27,6 @@ export class UrgentGateway implements OnGatewayConnection {
   async updateLocation(@MessageBody() updateLocationDto: UpdateLocationDto) {
     const { id, lat, lng } = updateLocationDto;
     await this.urgentService.updateLocation(id, lat, lng);
-    this.socket.in(`urgent-${id}`).emit('updateLocation', { lat, lng });
+    this.socket.in(`urgent-${id}`).emit('locationUpdated', { lat, lng });
   }
 }

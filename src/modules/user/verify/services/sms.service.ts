@@ -11,6 +11,7 @@ export class SmsOtpService {
 
   async sendOtp(phoneNumber: string, otp: string): Promise<boolean> {
     // TODO: Handle the case of twilio not being able to send message
+    console.log(otp);
     await this.twilioClient.messages.create({
       body: `Your OTP for E-Mistri is ${otp}`,
       to: '+977' + phoneNumber,

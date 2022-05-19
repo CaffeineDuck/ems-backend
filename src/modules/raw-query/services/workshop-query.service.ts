@@ -18,7 +18,7 @@ export class WorkshopQueryService {
         location,
         St_Distance(
           geolocation,
-          St_SetSRID(St_MakePoint(${lng}, ${lng}), 4326)
+          St_SetSRID(St_MakePoint(${lng}, ${lat}), 4326)
         ) AS displacement 
       FROM
         "Workshop"
@@ -28,6 +28,7 @@ export class WorkshopQueryService {
           geolocation,
           St_SetSRID(St_MakePoint(${lng}, ${lat}), 4326)
         ) < 15000
+        AND "Workshop"."verified" = true
       ORDER BY
         displacement; 
     `;
