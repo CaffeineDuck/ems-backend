@@ -8,7 +8,7 @@ import { UserService } from 'src/modules/user/user.service';
 import { VerifyService } from 'src/modules/user/verify/services/verify.service';
 import { OtpFlowDto } from '../dto/otp/flow.dto';
 import { VerifyOtpDto } from '../dto/otp/verify.dto';
-import { TokensDto } from '../dto/tokens.dto';
+import { Tokens } from '../entities/tokens.entity';
 import { TokenService } from './token.service';
 
 @Injectable()
@@ -24,8 +24,6 @@ export class AuthService {
     if (!user) {
       user = await this.usersService.createByPhone(phoneNumber);
     }
-
-    await this.usersService.updatePhone(user.id, phoneNumber);
     return user.id;
   }
 
@@ -35,9 +33,8 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async verifyOtp({ otp, userId }: VerifyOtpDto): Promise<TokensDto> {
+  async verifyOtp({ otp, userId }: VerifyOtpDto): Promise<Tokens> {
     await this.verifyService.verifyPhone(userId, otp);
-
     const user = await this.usersService.getById(userId);
     const tokens = await this.genTokens(user!);
     return tokens;

@@ -1,6 +1,9 @@
 import { IsNumber, IsString } from 'class-validator';
 
-export class StopServiceDto {
+export class StopUrgentDto {
+  @IsString()
+  id: string;
+
   @IsNumber()
   price: number;
 

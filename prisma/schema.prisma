@@ -12,23 +12,23 @@ datasource db {
 }
 
 model UrgentService {
-  id Int @id @default(autoincrement())
+  id String @id @default(cuid())
 
-  distance    Float
-  vechileType VechileType
-  started     Boolean                          @default(false)
-  completed   Boolean                          @default(false)
-  cancelled   Boolean                          @default(false)
-  description String?
-  price       Int?
-  endTime     DateTime?
-  startTime   DateTime?
-  geolocation Unsupported("GEOGRAPHY(POINT)")?
+  vechileType      VechileType
+  started          Boolean                          @default(false)
+  completed        Boolean                          @default(false)
+  cancelled        Boolean                          @default(false)
+  description      String?
+  price            Int?
+  endTime          DateTime?
+  startTime        DateTime?
+  geolocation      Unsupported("GEOGRAPHY(POINT)")?
+  finalGeolocation Unsupported("GEOGRAPHY(POINT)")?
 
   userId     String
   user       User      @relation(fields: [userId], references: [id])
-  workShopId Int?
-  workShop   Workshop? @relation(fields: [workShopId], references: [id])
+  workshopId Int?
+  workshop   Workshop? @relation(fields: [workshopId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -91,8 +91,8 @@ model Rating {
 
   userId     String
   user       User     @relation(fields: [userId], references: [id])
-  workShopId Int
-  workshop   Workshop @relation(fields: [workShopId], references: [id])
+  workshopId Int
+  workshop   Workshop @relation(fields: [workshopId], references: [id])
 }
 
 model User {

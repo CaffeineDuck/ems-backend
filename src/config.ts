@@ -26,4 +26,8 @@ export default () =>
         region: process.env.AWS_S3_REGION || 'ap-south-1',
       },
     },
+    pusher: {
+      instanceId: process.env.PUSHER_INSTANCE_ID,
+      secretKey: process.env.PUSHER_KEY,
+    },
   } as IConfig);

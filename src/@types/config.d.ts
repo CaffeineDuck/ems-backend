@@ -27,10 +27,16 @@ interface IAwsConfig {
   };
 }
 
+interface IPusherConfig {
+  instanceId: string;
+  secretKey: string;
+}
+
 interface IConfig {
   jwt: IJwtConfig;
   server: IServerConfig;
   twilio: ITwilioConfig;
   geolocation: IGeolocationConfig;
   aws: IAwsConfig;
+  pusher: IPusherConfig;
 }
