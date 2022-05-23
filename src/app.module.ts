@@ -7,9 +7,11 @@ import { AuthModule } from './modules/auth/auth.module';
 import { WorkshopModule } from './modules/workshop/workshop.module';
 import { UserModule } from './modules/user/user.module';
 import { ClientModule } from './modules/client/client.module';
+import * as redisStore from 'cache-manager-redis-store';
 import { UploadModule } from './modules/upload/upload.module';
 import { EmsModule } from './modules/ems/ems.module';
 import { BullModule } from '@nestjs/bull';
+import { RedisClientOptions } from 'redis';
 
 @Module({
   imports: [
@@ -31,7 +33,14 @@ import { BullModule } from '@nestjs/bull';
       isGlobal: true,
       load: [config],
     }),
-    CacheModule.register(),
+    CacheModule.register<RedisClientOptions>({
+      store: redisStore,
+      socket: {
+        host: 'localhost',
+        port: 6379,
+      },
+      isGlobal: true,
+    }),
   ],
 })
 export class AppModule {}

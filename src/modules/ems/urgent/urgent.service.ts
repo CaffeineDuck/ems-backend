@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/modules/commons/prisma/prisma.service';
 import { UrgentQueryService } from 'src/modules/raw-query/services/urgent-query.service';
 import { StopUrgentDto } from './dto/stop-urgent.dto';
@@ -12,6 +8,7 @@ import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
 import { randomUUID } from 'crypto';
 import { RequestUrgentJob } from './entities/urgent.entity';
+import { WsException } from '@nestjs/websockets';
 
 @Injectable()
 export class UrgentService {
@@ -22,12 +19,16 @@ export class UrgentService {
     @InjectQueue('urgentService') private readonly urgentQueue: Queue,
   ) {}
 
+  getUrgentName(name: string): string {
+    return `urgentService:${name}`;
+  }
+
   async requestService(userId: string, requestUrgentDto: RequestUrgentDto) {
     const workshop = await this.prismaService.workshop.findUnique({
       where: { id: requestUrgentDto.workshopId },
       select: { ownerId: true },
     });
-    if (!workshop) throw new BadRequestException('Workshop not found');
+    if (!workshop) throw new WsException('Workshop not found');
 
     const existingService = await this.prismaService.urgentService.findFirst({
       where: {
@@ -38,28 +39,26 @@ export class UrgentService {
     });
 
     if (existingService)
-      throw new ForbiddenException(
-        'User or workshop has a open urgent service',
-      );
+      throw new WsException('User or workshop has a open urgent service');
 
     const job = await this.urgentQueue.add(
       `cancelRequest`,
       { userId, ...requestUrgentDto } as RequestUrgentJob,
-      { delay: 60 * 1000, jobId: randomUUID() },
+      { delay: 120 * 1000, jobId: randomUUID() },
     );
 
     await this.notificationService.sendNotifToUser(workshop.ownerId, {
       apns: { aps: {}, data: { requestId: job.id } },
     });
 
-    return job.id;
+    return [job.id, workshop.ownerId];
   }
 
   async acceptRequest(workshopUserId: string, requestId: string) {
     // Getting the job data
     const job = await this.urgentQueue.getJob(requestId);
     if (!job || !(await job?.isDelayed()))
-      throw new BadRequestException('Request ID does not exist or has expired');
+      throw new WsException('Request ID does not exist or has expired');
     const { lat, lng, workshopId, userId, ...service }: RequestUrgentJob =
       job.data;
 
@@ -69,7 +68,7 @@ export class UrgentService {
       select: { ownerId: true },
     });
     if (!workshop || workshop.ownerId !== workshopUserId)
-      throw new ForbiddenException('User not the given workshop owner');
+      throw new WsException('User not the given workshop owner');
 
     // Create urgent service as transaction as it may fail at any time
     const createdServiceId = await this.prismaService.$transaction(
@@ -108,7 +107,8 @@ export class UrgentService {
 
   async rejectRequest(workshopUserId: string, requestId: string) {
     const job = await this.urgentQueue.getJob(requestId);
-    if (!job) throw new BadRequestException('No request with that ID found');
+    if (!job || !(await job?.isDelayed()))
+      throw new WsException('No request with that ID found or has expired');
 
     const { userId, workshopId }: RequestUrgentJob = job.data;
 
@@ -116,8 +116,10 @@ export class UrgentService {
       where: { id: workshopId },
     });
     if (workshop?.ownerId !== workshopUserId) {
-      throw new ForbiddenException('User not allowed to cancel this request');
+      throw new WsException('User not allowed to cancel this request');
     }
+
+    await job.promote();
 
     await this.notificationService.sendNotifToUser(userId, {
       apns: { aps: {}, data: { message: 'request rejected' } },
@@ -139,15 +141,16 @@ export class UrgentService {
     );
 
     if (urgentService?.workshopId !== workshopUser?.id)
-      throw new ForbiddenException('Service not found for current workshop');
+      throw new WsException('Service not found for current workshop');
     if (urgentService?.completed)
-      throw new BadRequestException('Urgent service has already ended');
+      throw new WsException('Urgent service has already ended');
 
     return this.prismaService.urgentService.update({
       where: { id },
       data: {
         endTime: new Date(),
         ...service,
+        completed: true,
       },
     });
   }
@@ -156,9 +159,9 @@ export class UrgentService {
     const job = await this.urgentQueue.getJob(requestId);
 
     // Check for job existance and if user is allowed to cancel it
-    if (!job) throw new BadRequestException('No request with that ID found');
+    if (!job) throw new WsException('No request with that ID found');
     if (job.data.userId !== userId)
-      throw new ForbiddenException('User not allowed to cancel this request');
+      throw new WsException('User not allowed to cancel this request');
 
     // Cancel the job
     const { workshopId }: RequestUrgentJob = job.data;
@@ -169,7 +172,7 @@ export class UrgentService {
       where: { id: workshopId },
       select: { ownerId: true },
     });
-    if (!workshop) throw new BadRequestException('Workshop not found');
+    if (!workshop) throw new WsException('Workshop not found');
 
     // Send notification to the workshop regarding cancellation
     await this.notificationService.sendNotifToUser(workshop.ownerId, {
