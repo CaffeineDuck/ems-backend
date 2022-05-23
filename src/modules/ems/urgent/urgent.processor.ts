@@ -15,7 +15,7 @@ export class UrgentConsumer {
 
   @Process('cancelRequest')
   async handle(job: Job<RequestUrgentJob>) {
-    this.loggerService.debug(`Running Job: ${job.data.workshopId}`);
+    this.loggerService.debug(`[handleCancelRequest] Running Job ${job.id}`);
 
     const { userId, workshopId, lat, lng, ...rest } = job.data;
     await this.prismaService.$transaction(async (prisma) => {
@@ -36,5 +36,7 @@ export class UrgentConsumer {
         lng,
       );
     });
+
+    this.loggerService.log('[handleCancelRequest] Job completed');
   }
 }

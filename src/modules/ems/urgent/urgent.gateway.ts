@@ -117,7 +117,13 @@ export class UrgentGateway
       workshopOwnerId.toString(),
     );
     const workshopSocketId = await this.cacheManager.get(urgentWorkshopOwnerId);
-    if (!workshopSocketId) throw new WsException('Workshop not connected');
+    if (!workshopSocketId) {
+      await this.urgentService.cancelRequest(
+        roomId.toString().split(':')[0],
+        roomId.toString(),
+      );
+      throw new WsException('Workshop not connected');
+    }
 
     const urgentRoomId = this.urgentService.getUrgentName(roomId.toString());
 

@@ -38,13 +38,24 @@ export class UrgentService {
       select: { id: true },
     });
 
-    if (existingService)
+    const existingJob = await this.urgentQueue.getDelayed();
+
+    console.log(existingJob);
+
+    const found = await Promise.all(
+      existingJob.map((job) => job.id.toString().startsWith(userId)),
+    );
+
+    console.log(found);
+
+    if (existingService || found.some((existing) => existing === true))
       throw new WsException('User or workshop has a open urgent service');
 
+    const randomJobId = `${userId}:${randomUUID()}`;
     const job = await this.urgentQueue.add(
       `cancelRequest`,
       { userId, ...requestUrgentDto } as RequestUrgentJob,
-      { delay: 120 * 1000, jobId: randomUUID() },
+      { delay: 120 * 1000, jobId: randomJobId },
     );
 
     await this.notificationService.sendNotifToUser(workshop.ownerId, {
