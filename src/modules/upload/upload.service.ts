@@ -2,7 +2,7 @@ import { S3 } from 'aws-sdk';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuid } from 'uuid';
-const sharp = require('sharp');
+import * as sharp from 'sharp';
 
 @Injectable()
 export class UploadService {
