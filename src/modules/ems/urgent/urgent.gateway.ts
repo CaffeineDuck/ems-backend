@@ -17,14 +17,13 @@ import { StopUrgentDto } from './dto/stop-urgent.dto';
 import { WsJwtGuard } from 'src/modules/auth/guards/ws-jwt.guard';
 import { CACHE_MANAGER, Inject, OnModuleInit, UseGuards } from '@nestjs/common';
 import { AccessTokenPayload } from 'src/modules/auth/entities/accessToken.entity';
-import * as jwt from 'jsonwebtoken';
-import { ConfigService } from '@nestjs/config';
 import { EmistriLogger } from 'src/modules/commons/logger/logger.service';
 import { Cache } from 'cache-manager';
 import { AcceptRequestDto } from './dto/accept-request.dto';
 import { WsRolesGuard } from 'src/modules/auth/guards/ws-roles.guard';
 import { HasRoles } from 'src/modules/auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
+import { TokenService } from 'src/modules/auth/services/token.service';
 
 // TODO: Make sure that only right user and workshop can connect
 // TODO: Add cancellation after start of service
@@ -39,10 +38,14 @@ export class UrgentGateway
 
   constructor(
     private readonly urgentService: UrgentService,
-    private readonly configService: ConfigService<IConfig>,
     private readonly loggerService: EmistriLogger,
+    private readonly tokenService: TokenService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
+
+  private getAuthToken(authorization?: string) {
+    return authorization?.split(' ')[1] as string;
+  }
 
   // TODO: Use shutdown hook instead of moduleInit hook
   async onModuleInit() {
@@ -53,16 +56,14 @@ export class UrgentGateway
   }
 
   async handleDisconnect(client: Socket) {
-    const authToken = client.handshake.headers.authorization?.split(
-      ' ',
-    )[1] as string;
+    const authToken = this.getAuthToken(
+      client?.handshake?.headers?.authorization,
+    );
     if (!authToken) return;
 
-    let jwtPayload = jwt.verify(
+    let jwtPayload = await this.tokenService.decodeToken<AccessTokenPayload>(
       authToken,
-      this.configService.get('jwt.secret', { infer: true })!,
-    ) as AccessTokenPayload;
-
+    );
     const urgentUserId = this.urgentService.getUrgentName(jwtPayload.userId);
     await this.cacheManager.del(urgentUserId);
 
@@ -72,15 +73,14 @@ export class UrgentGateway
   }
 
   async handleConnection(client: Socket, ..._: any[]) {
-    const authToken = client.handshake.headers.authorization?.split(
-      ' ',
-    )[1] as string;
+    const authToken = this.getAuthToken(
+      client?.handshake?.headers?.authorization,
+    );
     if (!authToken) client.disconnect();
 
-    let jwtPayload = jwt.verify(
+    let jwtPayload = await this.tokenService.decodeToken<AccessTokenPayload>(
       authToken,
-      this.configService.get('jwt.secret', { infer: true })!,
-    ) as AccessTokenPayload;
+    );
 
     const urgentUserId = this.urgentService.getUrgentName(jwtPayload.userId);
     await this.cacheManager.set(urgentUserId, client.id, {

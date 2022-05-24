@@ -24,5 +24,6 @@ import { VerifyModule } from '../user/verify/verify.module';
   ],
   controllers: [AuthController],
   providers: [AuthService, TokenService, JwtStrategy],
+  exports: [TokenService],
 })
 export class AuthModule {}

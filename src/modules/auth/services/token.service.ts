@@ -29,7 +29,8 @@ export class TokenService {
     });
   }
 
-  async decodeRefreshToken(token: string): Promise<RefreshTokenPayload> {
-    return this.jwtService.verifyAsync(token);
+  async decodeToken<T>(token: string): Promise<T> {
+    const verified = await this.jwtService.verifyAsync(token);
+    return verified;
   }
 }

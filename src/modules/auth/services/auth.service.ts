@@ -9,6 +9,7 @@ import { UserService } from 'src/modules/user/user.service';
 import { VerifyService } from 'src/modules/user/verify/services/verify.service';
 import { OtpFlowDto } from '../dto/otp/flow.dto';
 import { VerifyOtpDto } from '../dto/otp/verify.dto';
+import { RefreshTokenPayload } from '../entities/refreshToken.entity';
 import { Tokens } from '../entities/tokens.entity';
 import { TokenService } from './token.service';
 
@@ -53,9 +54,8 @@ export class AuthService {
   }
 
   async refreshToken(refreshToken: string) {
-    const refreshTokenPayload = await this.tokenService.decodeRefreshToken(
-      refreshToken,
-    );
+    const refreshTokenPayload =
+      await this.tokenService.decodeToken<RefreshTokenPayload>(refreshToken);
 
     const user = await this.usersService.getById(refreshTokenPayload.userId);
     if (!user) throw new NotFoundException('User not found');
