@@ -14,25 +14,29 @@ export class WorkshopQueryService {
     return prisma.$queryRaw`
       SELECT
         name,
-        id,
+        "Workshop".id,
         location,
         images,
         ST_AsText(geolocation) AS coordinates,
         ST_Distance(
           geolocation,
           St_SetSRID(St_MakePoint(${lng}, ${lat}), 4326)
-        ) AS displacement
+        ) AS displacement,
+        AVG("Rating"."score") AS rating
       FROM
         "Workshop"
+        LEFT OUTER JOIN "Rating" ON "Workshop".id = "Rating"."workshopId"
       WHERE
-        ${vechile} = ANY("Workshop"."vechileTypes")
+         ${vechile} = ANY("Workshop"."vechileTypes")
         AND St_Distance(
           geolocation,
           St_SetSRID(St_MakePoint(${lng}, ${lat}), 4326)
         ) < 15000
         AND "Workshop"."verified" = true
+      GROUP BY
+        "Workshop"."id"
       ORDER BY
-        displacement; 
+        displacement;
     `;
   }
 

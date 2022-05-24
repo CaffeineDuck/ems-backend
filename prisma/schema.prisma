@@ -33,6 +33,7 @@ model UrgentService {
   user       User      @relation(fields: [userId], references: [id])
   workshopId Int?
   workshop   Workshop? @relation(fields: [workshopId], references: [id])
+  Rating     Rating?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -94,10 +95,12 @@ model Rating {
   score   Int
   comment String?
 
+  serviceId  String        @unique
+  service    UrgentService @relation(fields: [serviceId], references: [id])
   userId     String
-  user       User     @relation(fields: [userId], references: [id])
+  user       User          @relation(fields: [userId], references: [id])
   workshopId Int
-  workshop   Workshop @relation(fields: [workshopId], references: [id])
+  workshop   Workshop      @relation(fields: [workshopId], references: [id])
 }
 
 model User {

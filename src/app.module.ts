@@ -12,6 +12,7 @@ import { UploadModule } from './modules/upload/upload.module';
 import { EmsModule } from './modules/ems/ems.module';
 import { BullModule } from '@nestjs/bull';
 import { RedisClientOptions } from 'redis';
+import { RatingModule } from './modules/rating/rating.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { RedisClientOptions } from 'redis';
       },
       isGlobal: true,
     }),
+    RatingModule,
   ],
 })
 export class AppModule {}
