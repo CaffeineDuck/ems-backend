@@ -30,4 +30,8 @@ export default () =>
       instanceId: process.env.PUSHER_INSTANCE_ID,
       secretKey: process.env.PUSHER_KEY,
     },
+    redis: {
+      host: process.env.REDIS_HOST || 'localhost',
+      port: process.env.REDIS_PORT || 6739,
+    },
   } as IConfig);

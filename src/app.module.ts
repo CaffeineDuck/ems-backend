@@ -2,7 +2,7 @@ import config from './config';
 import { CacheModule, Module } from '@nestjs/common';
 import { AdminModule } from './modules/admin/admin.module';
 import { CommonsModule } from './modules/commons/commons.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { WorkshopModule } from './modules/workshop/workshop.module';
 import { UserModule } from './modules/user/user.module';
@@ -12,7 +12,6 @@ import { UploadModule } from './modules/upload/upload.module';
 import { EmsModule } from './modules/ems/ems.module';
 import { BullModule } from '@nestjs/bull';
 import { RedisClientOptions } from 'redis';
-import { RatingModule } from './modules/rating/rating.module';
 
 @Module({
   imports: [
@@ -24,25 +23,34 @@ import { RatingModule } from './modules/rating/rating.module';
     WorkshopModule,
     UploadModule,
     EmsModule,
-    BullModule.forRoot({
-      redis: {
-        port: 6379,
-        host: 'localhost',
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService<IConfig>) => {
+        return {
+          redis: {
+            host: await configService.get('redis.host', { infer: true }),
+            port: await configService.get('redis.port', { infer: true }),
+          },
+        };
       },
     }),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [config],
     }),
-    CacheModule.register<RedisClientOptions>({
-      store: redisStore,
-      socket: {
-        host: 'localhost',
-        port: 6379,
+    CacheModule.registerAsync<RedisClientOptions>({
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService<IConfig>) => {
+        return {
+          store: redisStore,
+          socket: {
+            host: await configService.get('redis.host', { infer: true }),
+            port: await configService.get('redis.port', { infer: true }),
+          },
+        };
       },
       isGlobal: true,
     }),
-    RatingModule,
   ],
 })
 export class AppModule {}

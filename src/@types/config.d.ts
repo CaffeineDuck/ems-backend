@@ -32,6 +32,11 @@ interface IPusherConfig {
   secretKey: string;
 }
 
+interface IRedisConfig {
+  host: string;
+  port: number;
+}
+
 interface IConfig {
   jwt: IJwtConfig;
   server: IServerConfig;
@@ -39,4 +44,5 @@ interface IConfig {
   geolocation: IGeolocationConfig;
   aws: IAwsConfig;
   pusher: IPusherConfig;
+  redis: IRedisConfig;
 }
