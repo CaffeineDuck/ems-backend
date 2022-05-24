@@ -22,12 +22,15 @@ import { ConfigService } from '@nestjs/config';
 import { EmistriLogger } from 'src/modules/commons/logger/logger.service';
 import { Cache } from 'cache-manager';
 import { AcceptRequestDto } from './dto/accept-request.dto';
+import { WsRolesGuard } from 'src/modules/auth/guards/ws-roles.guard';
+import { HasRoles } from 'src/modules/auth/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 
 // TODO: Make sure that only right user and workshop can connect
 // TODO: Add cancellation after start of service
 // TODO: Add busy/non-busy system for workshops
 @WebSocketGateway({ transports: ['websocket'] })
-@UseGuards(WsJwtGuard)
+@UseGuards(WsJwtGuard, WsRolesGuard)
 export class UrgentGateway
   implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit
 {
@@ -104,6 +107,7 @@ export class UrgentGateway
   }
 
   @SubscribeMessage('requestUrgent')
+  @HasRoles(Role.USER)
   async requestUrgent(
     @UserId() userId: string,
     @MessageBody() requestUrgent: RequestUrgentDto,
@@ -130,7 +134,7 @@ export class UrgentGateway
     const urgentRoomId = this.urgentService.getUrgentName(roomId.toString());
 
     client.join(urgentRoomId);
-    this.socket.to(urgentRoomId).emit('requestCreated', { roomId });
+    this.socket.to(urgentRoomId).emit('urgentCreated', { roomId });
     this.socket
       .to(workshopSocketId as string)
       .emit('requestUrgent', { roomId });
@@ -139,6 +143,7 @@ export class UrgentGateway
   }
 
   @SubscribeMessage('rejectUrgent')
+  @HasRoles(Role.WORKSHOP)
   async rejectUrgent(
     @UserId() userId: string,
     @MessageBody('requestId') requestId: string,
@@ -150,14 +155,14 @@ export class UrgentGateway
     await this.urgentService.rejectRequest(userId, requestId);
 
     const urgentRequestId = this.urgentService.getUrgentName(requestId);
-    this.socket
-      .to(urgentRequestId)
-      .emit('requestRejected', { urgentRequestId });
+    this.socket.to(urgentRequestId).emit('urgentRejected', { urgentRequestId });
+    this.socket.socketsLeave(urgentRequestId);
 
     this.loggerService.log('[rejectUrgent] Rejection complete');
   }
 
   @SubscribeMessage('acceptUrgent')
+  @HasRoles(Role.WORKSHOP)
   async acceptUrgent(
     @UserId() userId: string,
     @MessageBody() { requestId }: AcceptRequestDto,
@@ -171,13 +176,15 @@ export class UrgentGateway
     const urgentRequestId = this.urgentService.getUrgentName(requestId);
     const urgentServiceId = this.urgentService.getUrgentName(serviceId);
 
-    this.socket.to(urgentRequestId).emit('requestAccepted', { serviceId });
+    this.socket.to(urgentRequestId).emit('urgentAccepted', { serviceId });
     client.join(urgentServiceId);
+    this.socket.socketsLeave(urgentRequestId);
 
     this.loggerService.log('[acceptUrgent] Urgent request accepted');
   }
 
   @SubscribeMessage('endUrgent')
+  @HasRoles(Role.WORKSHOP)
   async endRide(
     @UserId() userId: string,
     @MessageBody() stopUrgentDto: StopUrgentDto,
@@ -195,6 +202,7 @@ export class UrgentGateway
   }
 
   @SubscribeMessage('cancelUrgent')
+  @HasRoles(Role.USER)
   async cancelRequest(
     @MessageBody('requestId') requestId: string,
     @UserId() userId: string,
@@ -202,11 +210,12 @@ export class UrgentGateway
     await this.urgentService.cancelRequest(userId, requestId);
 
     const urgentRequestId = this.urgentService.getUrgentName(requestId);
-    this.socket.to(urgentRequestId).emit('reuqestCancelled');
+    this.socket.to(urgentRequestId).emit('urgentCancelled');
   }
 
   // TODO: Add validation for updating location
   @SubscribeMessage('updateLocation')
+  @HasRoles(Role.WORKSHOP)
   async updateLocation(@MessageBody() updateLocationDto: UpdateLocationDto) {
     const { id, lat, lng } = updateLocationDto;
     await this.urgentService.updateLocation(id, lat, lng);
@@ -225,6 +234,7 @@ export class UrgentGateway
   }
 
   @SubscribeMessage('reachedDestination')
+  @HasRoles(Role.WORKSHOP)
   async reachedDestination(
     @UserId() userId: string,
     @MessageBody('serviceId') serviceId: string,
@@ -235,6 +245,6 @@ export class UrgentGateway
     const urgentUserId = this.urgentService.getUrgentName(clientUserId);
     const socketId = (await this.cacheManager.get(urgentUserId)) as string;
 
-    this.socket.to(socketId).emit('reachedDestination');
+    this.socket.to(socketId).emit('reachedDestination', { serviceId });
   }
 }

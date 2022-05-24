@@ -10,7 +10,6 @@ import { randomUUID } from 'crypto';
 import { RequestUrgentJob } from './entities/urgent.entity';
 import { WsException } from '@nestjs/websockets';
 
-
 @Injectable()
 export class UrgentService {
   constructor(
@@ -186,17 +185,27 @@ export class UrgentService {
     await this.notificationService.sendNotifToUser(workshop.ownerId, {
       apns: { data: { message: 'request cancelled' }, aps: {} },
     });
+
+    return { ownerId: workshop.ownerId };
   }
 
   async reachedDestination(userId: string, serviceId: string) {
     const urgentService = await this.prismaService.urgentService.findUnique({
       where: { id: serviceId },
-      include: { workshop: { select: { ownerId: true } } },
+      select: {
+        reachedDestination: true,
+        workshop: { select: { ownerId: true } },
+      },
     });
 
     if (urgentService?.workshop?.ownerId !== userId)
       throw new WsException(
         'Workshop not allowed to modify this urgent service',
+      );
+
+    if (urgentService?.reachedDestination)
+      throw new WsException(
+        'Already reached the destination once for this request',
       );
 
     return this.prismaService.urgentService.update({

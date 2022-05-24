@@ -18,4 +18,7 @@ export class CreateWorkshopDto {
 
   @IsLongitude()
   lng: number;
+
+  @IsString({ each: true })
+  images: string[];
 }

@@ -16,10 +16,12 @@ export class WorkshopQueryService {
         name,
         id,
         location,
-        St_Distance(
+        images,
+        ST_AsText(geolocation) AS coordinates,
+        ST_Distance(
           geolocation,
           St_SetSRID(St_MakePoint(${lng}, ${lat}), 4326)
-        ) AS displacement 
+        ) AS displacement
       FROM
         "Workshop"
       WHERE

@@ -23,7 +23,7 @@ export class UrgentConsumer {
         data: {
           user: { connect: { id: userId } },
           workshop: { connect: { id: workshopId } },
-          cancelled: true,
+          rejected: true,
           completed: true,
           ...rest,
         },

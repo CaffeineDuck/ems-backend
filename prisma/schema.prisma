@@ -58,6 +58,7 @@ model Workshop {
   location     String
   vechileTypes VechileType[]
   verified     Boolean                          @default(false)
+  images       String[]
   geolocation  Unsupported("GEOGRAPHY(POINT)")?
 
   ownerId        String             @unique
