@@ -7,8 +7,7 @@ export class UrgentQueryService {
     id: string,
   ): Promise<{ lat: number; lng: number }> {
     return prisma.$queryRaw`
-      SELECT ST_X(geolocation) AS lat,
-              ST_Y(geolocation) AS lng
+      SELECT ST_AsText(geolocation) AS coordinates
       FROM "UrgentService"
       WHERE id = ${id};
     `;
