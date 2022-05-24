@@ -10,6 +10,7 @@ import { randomUUID } from 'crypto';
 import { RequestUrgentJob } from './entities/urgent.entity';
 import { WsException } from '@nestjs/websockets';
 
+
 @Injectable()
 export class UrgentService {
   constructor(
@@ -40,13 +41,9 @@ export class UrgentService {
 
     const existingJob = await this.urgentQueue.getDelayed();
 
-    console.log(existingJob);
-
     const found = await Promise.all(
       existingJob.map((job) => job.id.toString().startsWith(userId)),
     );
-
-    console.log(found);
 
     if (existingService || found.some((existing) => existing === true))
       throw new WsException('User or workshop has a open urgent service');
@@ -189,6 +186,40 @@ export class UrgentService {
     await this.notificationService.sendNotifToUser(workshop.ownerId, {
       apns: { data: { message: 'request cancelled' }, aps: {} },
     });
+  }
+
+  async reachedDestination(userId: string, serviceId: string) {
+    const urgentService = await this.prismaService.urgentService.findUnique({
+      where: { id: serviceId },
+      include: { workshop: { select: { ownerId: true } } },
+    });
+
+    if (urgentService?.workshop?.ownerId !== userId)
+      throw new WsException(
+        'Workshop not allowed to modify this urgent service',
+      );
+
+    return this.prismaService.urgentService.update({
+      where: { id: serviceId },
+      data: { reachedDestination: true },
+      select: { userId: true },
+    });
+  }
+
+  async getCurrentRequest(userId: string) {
+    const currentRequest = await this.prismaService.urgentService.findFirst({
+      where: {
+        OR: [{ userId }, { workshop: { ownerId: userId } }],
+        started: true,
+        completed: false,
+      },
+      select: { id: true },
+    });
+
+    if (!currentRequest?.id)
+      throw new WsException('User has no open urgent requests');
+
+    return { serviceId: currentRequest.id };
   }
 
   async getLocation(id: string) {

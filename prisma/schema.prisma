@@ -14,16 +14,20 @@ datasource db {
 model UrgentService {
   id String @id @default(cuid())
 
-  vechileType      VechileType
-  started          Boolean                          @default(false)
-  completed        Boolean                          @default(false)
-  cancelled        Boolean                          @default(false)
-  description      String?
-  price            Int?
-  endTime          DateTime?
-  startTime        DateTime?
-  geolocation      Unsupported("GEOGRAPHY(POINT)")?
-  finalGeolocation Unsupported("GEOGRAPHY(POINT)")?
+  vechileType        VechileType
+  started            Boolean                          @default(false)
+  completed          Boolean                          @default(false)
+  rejected           Boolean                          @default(false)
+  reachedDestination Boolean                          @default(false)
+  cancelled          Boolean                          @default(false)
+  cancelledBy        Role?
+  cancelReason       String?
+  description        String?
+  price              Int?
+  endTime            DateTime?
+  startTime          DateTime?
+  geolocation        Unsupported("GEOGRAPHY(POINT)")?
+  finalGeolocation   Unsupported("GEOGRAPHY(POINT)")?
 
   userId     String
   user       User      @relation(fields: [userId], references: [id])

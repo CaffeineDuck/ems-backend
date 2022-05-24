@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { ShutdownSignal, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { useContainer } from 'class-validator';
 import { AppModule } from './app.module';
@@ -14,6 +14,9 @@ async function bootstrap() {
   app.use(helmet());
   app.useLogger(app.get(EmistriLogger));
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
+
+  // Enable shutdown hooks
+  app.enableShutdownHooks(['SIGINT', 'SIGBREAK', 'SIGTERM']);
 
   // Validation pipe
   app.useGlobalPipes(

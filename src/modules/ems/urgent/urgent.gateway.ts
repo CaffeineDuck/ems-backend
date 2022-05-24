@@ -7,7 +7,6 @@ import {
   ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  OnGatewayInit,
 } from '@nestjs/websockets';
 import { UrgentService } from './urgent.service';
 import { UpdateLocationDto } from './dto/update-location.dto';
@@ -16,7 +15,7 @@ import { UserId } from 'src/modules/user/decorators/user-id.decorator';
 import { RequestUrgentDto } from './dto/request-urgent.dto';
 import { StopUrgentDto } from './dto/stop-urgent.dto';
 import { WsJwtGuard } from 'src/modules/auth/guards/ws-jwt.guard';
-import { CACHE_MANAGER, Inject, UseGuards } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, OnModuleInit, UseGuards } from '@nestjs/common';
 import { AccessTokenPayload } from 'src/modules/auth/entities/accessToken.entity';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
@@ -25,10 +24,12 @@ import { Cache } from 'cache-manager';
 import { AcceptRequestDto } from './dto/accept-request.dto';
 
 // TODO: Make sure that only right user and workshop can connect
+// TODO: Add cancellation after start of service
+// TODO: Add busy/non-busy system for workshops
 @WebSocketGateway({ transports: ['websocket'] })
 @UseGuards(WsJwtGuard)
 export class UrgentGateway
-  implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
+  implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit
 {
   @WebSocketServer()
   socket: Server;
@@ -40,11 +41,12 @@ export class UrgentGateway
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
-  async afterInit(_: Server) {
-    const getUrentKey = this.urgentService.getUrgentName('*');
-    const keys: string[] = await this.cacheManager.store.keys!(getUrentKey);
+  // TODO: Use shutdown hook instead of moduleInit hook
+  async onModuleInit() {
+    const urgentKey = this.urgentService.getUrgentName('*');
+    const keys = await this.cacheManager.store.keys!(urgentKey);
 
-    await Promise.all(keys.map((key) => this.cacheManager.del(key)));
+    await Promise.all(keys.map((key: string) => this.cacheManager.del(key)));
   }
 
   async handleDisconnect(client: Socket) {
@@ -101,7 +103,7 @@ export class UrgentGateway
     client.join(urgentRoomId);
   }
 
-  @SubscribeMessage('request')
+  @SubscribeMessage('requestUrgent')
   async requestUrgent(
     @UserId() userId: string,
     @MessageBody() requestUrgent: RequestUrgentDto,
@@ -131,12 +133,12 @@ export class UrgentGateway
     this.socket.to(urgentRoomId).emit('requestCreated', { roomId });
     this.socket
       .to(workshopSocketId as string)
-      .emit('urgentRequest', { roomId });
+      .emit('requestUrgent', { roomId });
 
     this.loggerService.log(`[requestUrgent] Emitted to roomId: ${roomId}`);
   }
 
-  @SubscribeMessage('reject')
+  @SubscribeMessage('rejectUrgent')
   async rejectUrgent(
     @UserId() userId: string,
     @MessageBody('requestId') requestId: string,
@@ -155,7 +157,7 @@ export class UrgentGateway
     this.loggerService.log('[rejectUrgent] Rejection complete');
   }
 
-  @SubscribeMessage('accept')
+  @SubscribeMessage('acceptUrgent')
   async acceptUrgent(
     @UserId() userId: string,
     @MessageBody() { requestId }: AcceptRequestDto,
@@ -175,7 +177,7 @@ export class UrgentGateway
     this.loggerService.log('[acceptUrgent] Urgent request accepted');
   }
 
-  @SubscribeMessage('end')
+  @SubscribeMessage('endUrgent')
   async endRide(
     @UserId() userId: string,
     @MessageBody() stopUrgentDto: StopUrgentDto,
@@ -186,13 +188,13 @@ export class UrgentGateway
     const urgentId = this.urgentService.getUrgentName(id);
 
     const endData = await this.urgentService.stopService(userId, stopUrgentDto);
-    this.socket.to(urgentId).emit('urgentEnd', endData);
+    this.socket.to(urgentId).emit('endUrgent', endData);
     this.socket.socketsLeave(urgentId);
 
     this.loggerService.log('[endRide] Service Ended');
   }
 
-  @SubscribeMessage('cancel')
+  @SubscribeMessage('cancelUrgent')
   async cancelRequest(
     @MessageBody('requestId') requestId: string,
     @UserId() userId: string,
@@ -200,7 +202,7 @@ export class UrgentGateway
     await this.urgentService.cancelRequest(userId, requestId);
 
     const urgentRequestId = this.urgentService.getUrgentName(requestId);
-    this.socket.to(urgentRequestId).emit('requestCancel');
+    this.socket.to(urgentRequestId).emit('reuqestCancelled');
   }
 
   // TODO: Add validation for updating location
@@ -211,5 +213,28 @@ export class UrgentGateway
 
     const urgentId = this.urgentService.getUrgentName(id);
     this.socket.in(urgentId).emit('locationUpdated', { lat, lng });
+  }
+
+  @SubscribeMessage('getCurrent')
+  async getCurrentUrgent(
+    @UserId() userId: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const service = await this.urgentService.getCurrentRequest(userId);
+    client.emit('getCurrent', service);
+  }
+
+  @SubscribeMessage('reachedDestination')
+  async reachedDestination(
+    @UserId() userId: string,
+    @MessageBody('serviceId') serviceId: string,
+  ) {
+    const { userId: clientUserId } =
+      await this.urgentService.reachedDestination(userId, serviceId);
+
+    const urgentUserId = this.urgentService.getUrgentName(clientUserId);
+    const socketId = (await this.cacheManager.get(urgentUserId)) as string;
+
+    this.socket.to(socketId).emit('reachedDestination');
   }
 }
