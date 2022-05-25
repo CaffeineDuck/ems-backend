@@ -3,7 +3,6 @@ import { PrismaService } from 'src/modules/commons/prisma/prisma.service';
 import { UrgentQueryService } from 'src/modules/raw-query/services/urgent-query.service';
 import { StopUrgentDto } from './dto/stop-urgent.dto';
 import { RequestUrgentDto } from './dto/request-urgent.dto';
-import { NotificationService } from 'src/modules/commons/notification/notification.service';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
 import { randomUUID } from 'crypto';
@@ -15,7 +14,6 @@ export class UrgentService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly urgentQuery: UrgentQueryService,
-    private readonly notificationService: NotificationService,
     @InjectQueue('urgentService') private readonly urgentQueue: Queue,
   ) {}
 
@@ -53,10 +51,6 @@ export class UrgentService {
       { userId, ...requestUrgentDto } as RequestUrgentJob,
       { delay: 120 * 1000, jobId: randomJobId },
     );
-
-    await this.notificationService.sendNotifToUser(workshop.ownerId, {
-      apns: { aps: {}, data: { requestId: job.id } },
-    });
 
     return [job.id, workshop.ownerId];
   }
@@ -101,11 +95,6 @@ export class UrgentService {
       },
     );
 
-    // Send notification to the user requesting the data
-    await this.notificationService.sendNotifToUser(userId, {
-      apns: { aps: {}, data: { urgentServiceId: createdServiceId } },
-    });
-
     // Removing job as it's no longer necessary to cancel the request
     await job.remove();
 
@@ -117,7 +106,7 @@ export class UrgentService {
     if (!job || !(await job?.isDelayed()))
       throw new WsException('No request with that ID found or has expired');
 
-    const { userId, workshopId }: RequestUrgentJob = job.data;
+    const { workshopId }: RequestUrgentJob = job.data;
 
     const workshop = await this.prismaService.workshop.findUnique({
       where: { id: workshopId },
@@ -127,10 +116,6 @@ export class UrgentService {
     }
 
     await job.promote();
-
-    await this.notificationService.sendNotifToUser(userId, {
-      apns: { aps: {}, data: { message: 'request rejected' } },
-    });
   }
 
   async stopService(userId: string, stopServiceDto: StopUrgentDto) {
@@ -180,11 +165,6 @@ export class UrgentService {
       select: { ownerId: true },
     });
     if (!workshop) throw new WsException('Workshop not found');
-
-    // Send notification to the workshop regarding cancellation
-    await this.notificationService.sendNotifToUser(workshop.ownerId, {
-      apns: { data: { message: 'request cancelled' }, aps: {} },
-    });
 
     return { ownerId: workshop.ownerId };
   }
