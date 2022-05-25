@@ -41,12 +41,10 @@ import { RedisClientOptions } from 'redis';
     CacheModule.registerAsync<RedisClientOptions>({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService<IConfig>) => {
+        const { host, port } = await configService.get('redis');
         return {
           store: redisStore,
-          socket: {
-            host: await configService.get('redis.host', { infer: true }),
-            port: await configService.get('redis.port', { infer: true }),
-          },
+          url: `redis://${host}:${port}/0`,
         };
       },
       isGlobal: true,
