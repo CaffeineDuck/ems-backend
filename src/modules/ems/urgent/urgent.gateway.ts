@@ -33,6 +33,7 @@ import { TokenService } from 'src/modules/auth/services/token.service';
   allowEIO3: true,
   cors: {
     credentials: true,
+    origin: '*',
   },
 })
 @UseGuards(WsJwtGuard, WsRolesGuard)
@@ -67,9 +68,14 @@ export class UrgentGateway
     );
     if (!authToken) return;
 
-    let jwtPayload = await this.tokenService.decodeToken<AccessTokenPayload>(
-      authToken,
-    );
+    try {
+      var jwtPayload = await this.tokenService.decodeToken<AccessTokenPayload>(
+        authToken,
+      );
+    } catch (e) {
+      return;
+    }
+
     const urgentUserId = this.urgentService.getUrgentName(jwtPayload.userId);
     await this.cacheManager.del(urgentUserId);
 
@@ -84,9 +90,13 @@ export class UrgentGateway
     );
     if (!authToken) client.disconnect();
 
-    let jwtPayload = await this.tokenService.decodeToken<AccessTokenPayload>(
-      authToken,
-    );
+    try {
+      var jwtPayload = await this.tokenService.decodeToken<AccessTokenPayload>(
+        authToken,
+      );
+    } catch (e) {
+      return client.disconnect();
+    }
 
     const urgentUserId = this.urgentService.getUrgentName(jwtPayload.userId);
     await this.cacheManager.set(urgentUserId, client.id, {

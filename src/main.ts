@@ -1,4 +1,4 @@
-import { ShutdownSignal, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { useContainer } from 'class-validator';
 import { AppModule } from './app.module';
@@ -10,7 +10,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Cors, helmet and logger
-  app.enableCors();
+  app.enableCors({
+    origin: '*',
+    credentials: true,
+  });
   app.use(helmet());
   app.useLogger(app.get(EmistriLogger));
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
