@@ -75,7 +75,7 @@ export class WorkshopService {
   }
 
   async addDocuments(userId: string, documents: AddDocumentsDto) {
-    await this.prismaService.workshop.update({
+    return this.prismaService.workshop.update({
       where: { ownerId: userId },
       data: { documents: { create: documents } },
     });

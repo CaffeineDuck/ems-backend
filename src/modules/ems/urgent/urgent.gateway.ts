@@ -28,7 +28,13 @@ import { TokenService } from 'src/modules/auth/services/token.service';
 // TODO: Make sure that only right user and workshop can connect
 // TODO: Add cancellation after start of service
 // TODO: Add busy/non-busy system for workshops
-@WebSocketGateway({ transports: ['websocket'] })
+@WebSocketGateway({
+  transports: ['websocket', 'polling'],
+  allowEIO3: true,
+  cors: {
+    credentials: true,
+  },
+})
 @UseGuards(WsJwtGuard, WsRolesGuard)
 export class UrgentGateway
   implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit
