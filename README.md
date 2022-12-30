@@ -19,20 +19,23 @@ pnpm install
   <summary> Environment Variables </summary>
   
    ```bash
-   AWS_SECRET_ACCESS_KEY=
-   AWS_SECRET_KEY_ID=
-   DATABASE_URL=
-   JWT_EXPIRES_IN=
-   JWT_REFRESH_EXPIRES_IN=
-   JWT_SECRET=
-   NODE_ENV=
-   PUSHER_INSTANCE_ID=
-   PUSHER_KEY=
-   REDIS_HOST=
-   REDIS_PORT=
-   TWILIO_ACCOUNT_SID=
-   TWILIO_AUTH_TOKEN=
-   TWILIO_PHONE_NUMBER=
+   AWS_SECRET_ACCESS_KEY= # Secret access key from AWS IAM (required)
+   AWS_SECRET_KEY_ID= # Secret key id from AWS IAM (required) 
+   AWS_S3_BUCKET= # The name of the AWS s3 bucket (default: 'emistiri-dev')
+   AWS_S3_REGION= # The region of your s3 bucket (default: 'ap-south-1')
+   DATABASE_URL= # The database URI 
+   JWT_EXPIRES_IN= # The time in which accessToken will expire (default: '1d')
+   JWT_REFRESH_EXPIRES_IN=  # The time in which refreshToken will expire (default: '14d')
+   JWT_SECRET= # The secret used for making accessToken and refreshToken (default: 'jwtSecret')
+   NODE_ENV= # The node env (production | development | staging)
+   PUSHER_INSTANCE_ID= # The instace id of pusher.js
+   PUSHER_KEY= # The key for of pusher.js
+   REDIS_HOST= # The host of redis instance (default: 'localhost')
+   REDIS_PORT= # The port for redis instance (default: 6579)
+   TWILIO_ACCOUNT_SID= # The account SID provided by twilio (required)
+   TWILIO_AUTH_TOKEN= # The auth token provided by twilio (required)
+   TWILIO_PHONE_NUMBER= # The phone number of twilio (required)
+   GEOLOCATION_RADIUS= # The radius upto which businesses must be pinged after a request (default: 1500)
    ```
 </details>
        
