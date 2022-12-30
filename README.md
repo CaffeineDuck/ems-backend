@@ -84,3 +84,6 @@ pnpm install
   ```
 
 </details>
+
+
+**`Note:`** **Also, there are some hardcoded credentials in this repo, I've left them out as they've already expired/ been rotated, so don't waste your time trying to exploit that.**
